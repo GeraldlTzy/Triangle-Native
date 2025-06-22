@@ -73,6 +73,8 @@ public class IDECompiler {
                 } else {
                     LLVMGenerator llvmGen = new LLVMGenerator(report);
                     llvmCode = llvmGen.generate(rootAST);
+                    if (report.numErrors == 0)
+                        success = true;
                 }
             }
         }
