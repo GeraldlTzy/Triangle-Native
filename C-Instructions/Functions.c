@@ -1,0 +1,1 @@
+int n; int f() {return 0;}

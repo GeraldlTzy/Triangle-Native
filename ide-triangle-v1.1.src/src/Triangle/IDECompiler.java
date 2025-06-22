@@ -15,6 +15,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.SyntacticAnalyzer.Parser;
 import Triangle.ContextualAnalyzer.Checker;
 import Triangle.CodeGenerator.Encoder;
+import Triangle.CodeGenerator.LLVMGenerator;
 
 
 
@@ -34,6 +35,7 @@ public class IDECompiler {
      */
     public IDECompiler() {
     }
+    public String llvmCode;
     
     /**
      * Particularly the same compileProgram method from the Triangle.Compiler
@@ -41,7 +43,7 @@ public class IDECompiler {
      * @param sourceName Path to the source file.
      * @return True if compilation was succesful.
      */
-    public boolean compileProgram(String sourceName) {
+    public boolean compileProgram(String sourceName, boolean llvm) {
         System.out.println("********** " +
                            "Triangle Compiler (IDE-Triangle 1.0)" +
                            " **********");
@@ -60,12 +62,17 @@ public class IDECompiler {
             checker.check(rootAST);
             if (report.numErrors == 0) {
                 System.out.println("Code Generation ...");
-                Encoder encoder = new Encoder(report);
-                encoder.encodeRun(rootAST, false);
                 
-                if (report.numErrors == 0) {
-                    encoder.saveObjectProgram(sourceName.replace(".tri", ".tam"));
-                    success = true;
+                if (!llvm) {
+                    Encoder encoder = new Encoder(report);
+                    encoder.encodeRun(rootAST, false);
+                    if (report.numErrors == 0) {
+                        encoder.saveObjectProgram(sourceName.replace(".tri", ".tam"));
+                        success = true;
+                    }
+                } else {
+                    LLVMGenerator llvmGen = new LLVMGenerator(report);
+                    llvmCode = llvmGen.generate(rootAST);
                 }
             }
         }
@@ -92,6 +99,9 @@ public class IDECompiler {
      */
     public Program getAST() {
         return(rootAST);
+    }
+    public String getLLVMCode(){
+        return llvmCode;
     }
     // </editor-fold>
     

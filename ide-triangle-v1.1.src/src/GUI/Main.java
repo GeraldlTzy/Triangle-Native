@@ -37,8 +37,12 @@ import Core.ExampleFileFilter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import Core.Visitors.TreeVisitor;
+import Triangle.AbstractSyntaxTrees.Program;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.swing.tree.DefaultMutableTreeNode;
-
+import Triangle.CodeGenerator.LLVMGenerator;
 /**
  * The Main class. Contains the main form.
  *
@@ -57,6 +61,7 @@ public class Main extends javax.swing.JFrame {
         } catch (Exception e) { }
         
         initComponents();
+        addButtonCompileLLVM();
         setSize(640, 480);
         setVisible(true);
         directory = new File(".");
@@ -90,6 +95,7 @@ public class Main extends javax.swing.JFrame {
             buttonCopy.setEnabled(false);
             buttonPaste.setEnabled(false);            
             buttonCompile.setEnabled(false);
+            buttonCompileLLVM.setEnabled(false);
             buttonRun.setEnabled(false);
             cutMenuItem.setEnabled(false);
             copyMenuItem.setEnabled(false);
@@ -128,6 +134,7 @@ public class Main extends javax.swing.JFrame {
         pasteMenuItem.setEnabled(true);
         compileMenuItem.setEnabled(true);
         buttonCompile.setEnabled(true);
+        buttonCompileLLVM.setEnabled(true);
        
         checkSaveChanges();        
         return(x);
@@ -614,7 +621,7 @@ public class Main extends javax.swing.JFrame {
             new File(desktopPane.getSelectedFrame().getTitle().replace(".tri", ".tam")).delete();
             
             output.setDelegate(delegateConsole);            
-            if (compiler.compileProgram(desktopPane.getSelectedFrame().getTitle())) {           
+            if (compiler.compileProgram(desktopPane.getSelectedFrame().getTitle(), false)) {           
                 output.setDelegate(delegateTAMCode);
                 disassembler.Disassemble(desktopPane.getSelectedFrame().getTitle().replace(".tri", ".tam"));
                 ((FileFrame)desktopPane.getSelectedFrame()).setTree((DefaultMutableTreeNode)treeVisitor.visitProgram(compiler.getAST(), null));
@@ -629,7 +636,43 @@ public class Main extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_compileMenuItemActionPerformed
+    private void compileLLVMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+    if ((!((FileFrame) desktopPane.getSelectedFrame()).getPreviouslySaved()) ||
+         ((FileFrame) desktopPane.getSelectedFrame()).hasChanged()) {
+        saveMenuItemActionPerformed(null);
+    }
 
+    if (((FileFrame) desktopPane.getSelectedFrame()).getPreviouslySaved()) {
+        ((FileFrame) desktopPane.getSelectedFrame()).selectConsole();
+        ((FileFrame) desktopPane.getSelectedFrame()).clearConsole();
+        ((FileFrame) desktopPane.getSelectedFrame()).clearLLVMCode();
+
+        output.setDelegate(delegateConsole);
+
+        if (compiler.compileProgram(desktopPane.getSelectedFrame().getTitle(), true)) {
+            try {
+                // 2. Obtener el AST y generar LLVM
+                String llvmCode = compiler.getLLVMCode();
+
+                // 3. Mostrar código LLVM en panel
+                ((FileFrame)desktopPane.getSelectedFrame()).setLLVMCode(llvmCode);
+
+                // 4. Guardar archivo .ll en disco
+                String path = desktopPane.getSelectedFrame().getTitle().replace(".tri", ".ll");
+                Files.writeString(Paths.get(path), llvmCode, StandardCharsets.UTF_8);
+
+                // 5. (Opcional) mostrar pestaña LLVM automáticamente
+                //llvmPane.setSelectedComponent(llvmScroll);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error generando código LLVM:\n" + e.getMessage());
+            }
+        } else {
+            ((FileFrame)desktopPane.getSelectedFrame()).highlightError(compiler.getErrorPosition());
+        }
+    }
+}
     /**
      * Handles the "Save" button and menu option.
      */
@@ -851,7 +894,24 @@ public class Main extends javax.swing.JFrame {
     javax.swing.JToolBar triangleToolBar;
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
-    
+    private javax.swing.JButton buttonCompileLLVM = new javax.swing.JButton();
+    private void addButtonCompileLLVM() {
+        buttonCompileLLVM = new javax.swing.JButton();
+        buttonCompileLLVM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/Icons/iconTriangleCompile.gif")));
+        buttonCompileLLVM.setToolTipText("Compile LLVM");
+        buttonCompileLLVM.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        buttonCompileLLVM.setBorderPainted(false);
+        buttonCompileLLVM.setEnabled(false);
+        buttonCompileLLVM.setFocusPainted(false);
+        buttonCompileLLVM.setFocusable(false);
+        buttonCompileLLVM.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                compileLLVMMenuItemActionPerformed(evt);
+            }
+        });
+        triangleToolBar.add(buttonCompileLLVM);
+    }
+
     // <editor-fold defaultstate="collapsed" desc=" Non-GUI Variables ">
     // [ Non-GUI variables declaration ]
     int untitledCount = 1;                                                  // Counts "Untitled" document names (e.g. "Untitled-1")

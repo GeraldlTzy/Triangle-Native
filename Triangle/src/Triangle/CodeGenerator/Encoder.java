@@ -92,7 +92,7 @@ import Triangle.AbstractSyntaxTrees.Vname;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 
-public final class Encoder implements Visitor {
+public class Encoder implements Visitor {
 
 
   // Commands
