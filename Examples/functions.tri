@@ -1,6 +1,6 @@
 let
   var n : Integer
-in
-  begin
-
+in begin
+  n := 56;
+  n := n + 1
 end

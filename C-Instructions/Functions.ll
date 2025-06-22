@@ -6,7 +6,13 @@ target triple = "x86_64-pc-windows-msvc19.36.32535"
 @n = dso_local global i32 0, align 4
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @f() #0 {
+define dso_local i32 @main() #0 {
+  %1 = alloca i32, align 4
+  store i32 0, ptr %1, align 4
+  store i32 56, ptr @n, align 4
+  %2 = load i32, ptr @n, align 4
+  %3 = add nsw i32 %2, 1
+  store i32 %3, ptr @n, align 4
   ret i32 0
 }
 

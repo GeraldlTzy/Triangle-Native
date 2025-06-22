@@ -1,1 +1,1 @@
-int n; int f() {return 0;}
+int n; int main() {n = 56; n = n +1; return 0;}

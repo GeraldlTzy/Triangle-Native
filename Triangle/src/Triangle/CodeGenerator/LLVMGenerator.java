@@ -3,14 +3,25 @@ package Triangle.CodeGenerator;
 import Triangle.AbstractSyntaxTrees.*;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.ErrorReporter;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class LLVMGenerator implements Visitor {
     private StringBuilder code;
+    private Map<String, String> locals;
+    private int tempCount;
+    
+    private String newTemp() {
+        return "%tmp" + (tempCount++);
+    }
+
     private final ErrorReporter reporter;
 
     public LLVMGenerator(ErrorReporter reporter) {
         this.reporter = reporter;
         this.code = new StringBuilder();
+        locals = new HashMap<>();
+        tempCount = 0;
     }
     public String generate(Program ast) {
         code.append("; Código LLVM generado por Triangle\n\n");
@@ -37,17 +48,23 @@ public final class LLVMGenerator implements Visitor {
         ast.C.visit(this, arg);
         return null;
     }
-
     @Override
     public Object visitVarDeclaration(VarDeclaration ast, Object arg) {
         String varName = ast.I.spelling;
-        code.insert(0, "@" + varName + " = dso_local global i32 0, align 4\n");
+        String regName = "%" + varName;
+        locals.put(varName, regName);
+        code.append("  " + regName + " = alloca i32, align 4\n");
         return null;
     }
 
-    @Override
-    public Object visitAssignCommand(AssignCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+  @Override
+    public Object visitAssignCommand(AssignCommand ast, Object arg) {
+        String varName = ((SimpleVname) ast.V).I.spelling;
+        String ptr = locals.get(varName); // %n
+        String value = (String) ast.E.visit(this, arg);
+
+        code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
+        return null;
     }
 
     @Override
@@ -67,7 +84,9 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitSequentialCommand(SequentialCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ast.C1.visit(this, o);
+        ast.C2.visit(this, o);
+        return null;
     }
 
     @Override
@@ -82,7 +101,12 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String leftReg = (String) ast.E1.visit(this, o);
+        String rightReg = (String) ast.E2.visit(this, o);
+
+        String tmpReg = newTemp();
+        code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+        return tmpReg;
     }
 
     @Override
@@ -107,7 +131,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIntegerExpression(IntegerExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.IL.spelling;
     }
 
     @Override
@@ -127,7 +151,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitVnameExpression(VnameExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.V.visit(this, o);
     }
 
     @Override
@@ -332,7 +356,11 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitSimpleVname(SimpleVname ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String varName = ast.I.spelling;
+        String ptr = locals.get(varName);
+        String tmpReg = newTemp();
+        code.append("  " + tmpReg + " = load i32, ptr " + ptr + ", align 4\n");
+        return tmpReg;
     }
 
     @Override
