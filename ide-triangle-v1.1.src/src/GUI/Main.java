@@ -651,19 +651,13 @@ public class Main extends javax.swing.JFrame {
 
         if (compiler.compileProgram(desktopPane.getSelectedFrame().getTitle(), true)) {
             try {
-                // 2. Obtener el AST y generar LLVM
+                // 1. Obtener el AST y generar LLVM
                 String llvmCode = compiler.getLLVMCode();
-
-                // 3. Mostrar código LLVM en panel
+                // 2. Mostrar código LLVM en panel
                 ((FileFrame)desktopPane.getSelectedFrame()).setLLVMCode(llvmCode);
-
-                // 4. Guardar archivo .ll en disco
+                // 3. Guardar archivo .ll en disco
                 String path = desktopPane.getSelectedFrame().getTitle().replace(".tri", ".ll");
                 Files.writeString(Paths.get(path), llvmCode, StandardCharsets.UTF_8);
-
-                // 5. (Opcional) mostrar pestaña LLVM automáticamente
-                //llvmPane.setSelectedComponent(llvmScroll);
-
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error generando código LLVM:\n" + e.getMessage());
