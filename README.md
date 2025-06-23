@@ -4,7 +4,7 @@
 
 - [x] visitProgram
 
-### - [x] COMMAND
+### COMMAND
 - [x] visitLetCommand
 - [x] visitVarDeclaration
 - [x] visitAssignCommand
