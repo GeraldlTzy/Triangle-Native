@@ -1,0 +1,1 @@
+int n; int main() {n = 56; n = n +1; return 0;}

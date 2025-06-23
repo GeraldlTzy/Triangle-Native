@@ -1,0 +1,9 @@
+let
+
+	var c: Char
+
+in begin
+
+	c := 'A'
+
+end

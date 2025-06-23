@@ -18,8 +18,8 @@
 - [ ] visitArrayExpression
 - [x] visitBinaryExpression
 - [ ] visitCallExpression
-- [ ] visitCharacterExpression
-- [ ] visitEmptyExpression
+- [x] visitCharacterExpression
+- [x] visitEmptyExpression
 - [ ] visitIfExpression
 - [x] visitIntegerExpression
 - [ ] visitLetExpression
@@ -77,9 +77,9 @@
 - [ ] visitSingleFieldTypeDenoter
 
 ### LITERAL, IDENTIFIER, OPERATOR
-- [ ] visitCharacterLiteral
+- [x] visitCharacterLiteral
 - [ ] visitIdentifier
-- [ ] visitIntegerLiteral
+- [x] visitIntegerLiteral
 - [ ] visitOperator
 
 ### VNAME
