@@ -143,7 +143,32 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitWhileCommand(WhileCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        //Generamos las etiquetas que necesitemos
+        code.append("; Comienza WHILE_COMMAND \n");
+        String startLabel = newLabel("while_start");
+        String endLabel = newLabel("while_end");
+        String bodyLabel = newLabel("while_body");
+        
+        code.append("  br label %" + startLabel + "\n");
+        code.append(startLabel + ": \n");
+        String condBool = (String) ast.E.visit(this, o); //Se trae el Binary expresison
+        
+        // branch para ver si la coindicion del while es true
+        code.append("  br i1 " + condBool + ", label %" + bodyLabel + ", label %" + endLabel + "\n");
+        
+        // Si es true, el body del while y se salta otra vez a start
+        code.append(bodyLabel + ": \n");
+        ast.C.visit(this, o);
+        
+        code.append("  br label %" + startLabel + "\n");
+        
+        //Si es false se salta a fin
+        code.append(endLabel + ": \n");
+        
+        code.append("; Termina WHILE_COMMAND \n");
+        //No necesita retornar nada 
+        return null;
+        
     }
 
     ////////////////////////////// EXPRESION
@@ -176,7 +201,7 @@ public final class LLVMGenerator implements Visitor {
                 code.append("  " + tmpReg + " = sdiv i32 " + leftReg + ", " + rightReg + "\n");
                 break;
             case "<":
-                code.append("  " + tmpReg + " = icmp slt i32" + leftReg + ", " + rightReg + "\n");
+                code.append("  " + tmpReg + " = icmp slt i32 " + leftReg + ", " + rightReg + "\n");
                 break;
             case "<=":
                 code.append("  " + tmpReg + " = icmp sle i32 " + leftReg + ", " + rightReg + "\n");

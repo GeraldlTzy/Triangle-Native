@@ -4,7 +4,7 @@
 
 - [x] visitProgram
 
-### COMMAND
+### - [x] COMMAND
 - [x] visitLetCommand
 - [x] visitVarDeclaration
 - [x] visitAssignCommand
@@ -12,7 +12,8 @@
 - [x] visitEmptyCommand
 - [x] visitIfCommand
 - [x] visitSequentialCommand
-- [ ] visitWhileCommand
+- [x] visitWhileCommand
+
 
 ### EXPRESION
 - [ ] visitArrayExpression
