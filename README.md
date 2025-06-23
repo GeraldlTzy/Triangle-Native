@@ -11,7 +11,7 @@
 - [x] visitCallCommand
 - [x] visitEmptyCommand
 - [x] visitIfCommand
-- [ ] visitSequentialCommand
+- [x] visitSequentialCommand
 - [ ] visitWhileCommand
 
 ### EXPRESION
