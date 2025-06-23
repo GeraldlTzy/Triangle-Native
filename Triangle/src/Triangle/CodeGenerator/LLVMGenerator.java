@@ -10,10 +10,29 @@ public final class LLVMGenerator implements Visitor {
     private StringBuilder code;
     private Map<String, String> locals;
     private int tempCount;
+    private int labelCount = 0; //Para generar nombre unigos en las etiquetas
     
+    // Genera un registro tipo %tmpX
     private String newTemp() {
         return "%tmp" + (tempCount++);
     }
+    // Overload de newTemp para poder ponerle un nombre cualquiera al registro
+    //Esto hace mas facil el debug pq genera .ll mas legible
+    private String newTemp(String name) {
+        return "%" + name + (tempCount++);
+    }
+    
+    //Genera una nueva label con un nombre unico
+    //Toma name como parametro para darle un nombre significatico a la etiqueta
+    //name solo tiene fines de debug, y leer el codigo llvm, no tiene nada funcioonal
+    private String newLabel(String name) {
+        return name + (labelCount++);
+    }
+    //Overload de newLabel si no importa el nombre de la etiqueta
+    private String newLabel(){
+        return "label" + (labelCount++);
+    }
+    
 
     private final ErrorReporter reporter;
 
@@ -81,7 +100,38 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIfCommand(IfCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Generamos etiquetas unicas para mostrar el else, el then y el fin dew un if
+        code.append("; Comienzo de IF_COMMAND \n");
+        String thenLabel = newLabel("then");
+        String elseLabel = newLabel("else");
+        String endIfLabel = newLabel("end_if");
+        
+        // Efvaluamos la condicion, esto se toma del BinaryExpression
+        String condBool = (String) ast.E.visit(this, o);
+        
+        
+        //Jump basado en condBool
+        code.append("  br i1 " + condBool + ", label %" + thenLabel + ", label %" + elseLabel + "\n");
+        
+        //THEN
+        code.append(thenLabel + ":\n");
+        ast.C1.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        //BLoque else
+        code.append(elseLabel + ":\n");
+        ast.C2.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        // Etiqueta de fin
+        code.append(endIfLabel + ":\n");
+        
+        code.append("; Fin de IF_COMMAND \n");
+        
+        return null;
+        
     }
 
     @Override
@@ -105,11 +155,49 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression ast, Object o) {
+        code.append("; Comienza BINARY_EXPRESSION \n");
         String leftReg = (String) ast.E1.visit(this, o);
         String rightReg = (String) ast.E2.visit(this, o);
-
-        String tmpReg = newTemp();
-        code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+        String tmpReg = newTemp("binaryRes");
+        String operation = ast.O.spelling;
+        
+        //No se si los tiene todos pero agregue todo lo que pude
+        switch (operation){
+            case "+":
+                code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "-":
+                code.append("  " + tmpReg + " = sub i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "*":
+                code.append("  " + tmpReg + " = mul i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "/":
+                code.append("  " + tmpReg + " = sdiv i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<":
+                code.append("  " + tmpReg + " = icmp slt i32" + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<=":
+                code.append("  " + tmpReg + " = icmp sle i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">":
+                code.append("  " + tmpReg + " = icmp sgt i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">=":
+                code.append("  " + tmpReg + " = icmp sge i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "=":
+                code.append("  " + tmpReg + " = icmp eq i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "!=":
+                code.append("  " + tmpReg + " = icmp ne i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            default:
+                System.out.println("AAAAAAAAAAA operador invalido no se como tirar un erro de triangle si es que tiene c lo menos");
+                return "0";
+        }
+        code.append("; Termina BINARY_EXPRESSION \n");
         return tmpReg;
     }
 
@@ -374,7 +462,7 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitOperator(Operator ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.spelling;
     }
     
 

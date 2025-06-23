@@ -10,7 +10,7 @@
 - [x] visitAssignCommand
 - [x] visitCallCommand
 - [x] visitEmptyCommand
-- [ ] visitIfCommand
+- [x] visitIfCommand
 - [ ] visitSequentialCommand
 - [ ] visitWhileCommand
 
