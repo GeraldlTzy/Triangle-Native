@@ -11,8 +11,8 @@
 - [x] visitCallCommand
 - [x] visitEmptyCommand
 - [x] visitIfCommand
-- [ ] visitSequentialCommand
-- [ ] visitWhileCommand
+- [x] visitSequentialCommand
+- [x] visitWhileCommand
 
 ### EXPRESION
 - [ ] visitArrayExpression
