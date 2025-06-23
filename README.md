@@ -16,7 +16,7 @@
 
 ### EXPRESION
 - [ ] visitArrayExpression
-- [x] visitBinaryExpression
+- [ ] visitBinaryExpression  - SUMA SOLO
 - [ ] visitCallExpression
 - [x] visitCharacterExpression
 - [x] visitEmptyExpression

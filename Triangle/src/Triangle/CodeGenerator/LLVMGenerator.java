@@ -10,10 +10,29 @@ public final class LLVMGenerator implements Visitor {
     private StringBuilder code;
     private Map<String, String> locals;
     private int tempCount;
+    private int labelCount = 0; //Para generar nombre unigos en las etiquetas
     
+    // Genera un registro tipo %tmpX
     private String newTemp() {
         return "%tmp" + (tempCount++);
     }
+    // Overload de newTemp para poder ponerle un nombre cualquiera al registro
+    //Esto hace mas facil el debug pq genera .ll mas legible
+    private String newTemp(String name) {
+        return "%" + name + (tempCount++);
+    }
+    
+    //Genera una nueva label con un nombre unico
+    //Toma name como parametro para darle un nombre significatico a la etiqueta
+    //name solo tiene fines de debug, y leer el codigo llvm, no tiene nada funcioonal
+    private String newLabel(String name) {
+        return name + (labelCount++);
+    }
+    //Overload de newLabel si no importa el nombre de la etiqueta
+    private String newLabel(){
+        return "label" + (labelCount++);
+    }
+    
 
     private final ErrorReporter reporter;
 
@@ -81,7 +100,41 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIfCommand(IfCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Generamos etiquetas unicas para mostrar el else, el then y el fin dew un if
+        code.append("; Comienzo de IF_COMMAND \n");
+        String thenLabel = newLabel("then");
+        String elseLabel = newLabel("else");
+        String endIfLabel = newLabel("end_if");
+        
+        // Efvaluamos la condicion, asumimos que i32 0 es false y que otro i32 no 0 es true
+        String condValue = (String) ast.E.visit(this, o);
+        
+        //Convertimos i32 a i1 para el jump
+        String condBool = newTemp("cond");
+        code.append("  " + condBool + " = icmp ne i32 " + condValue + ", 0\n");
+        
+        //Jump basado en condBool
+        code.append("  br i1 " + condBool + ", label %" + thenLabel + ", label %" + elseLabel + "\n");
+        
+        //THEN
+        code.append(thenLabel + ":\n");
+        ast.C1.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        //BLoque else
+        code.append(elseLabel + ":\n");
+        ast.C2.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        // Etiqueta de fin
+        code.append(endIfLabel + ":\n");
+        
+        code.append("; Fin de IF_COMMAND \n");
+        
+        return null;
+        
     }
 
     @Override

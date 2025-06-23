@@ -1,0 +1,9 @@
+let 
+	var x: Integer
+in begin
+	x := 5;
+	if x > 3 then
+		x := 10
+	else
+		x := 0
+end
