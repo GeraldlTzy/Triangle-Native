@@ -106,12 +106,9 @@ public final class LLVMGenerator implements Visitor {
         String elseLabel = newLabel("else");
         String endIfLabel = newLabel("end_if");
         
-        // Efvaluamos la condicion, asumimos que i32 0 es false y que otro i32 no 0 es true
-        String condValue = (String) ast.E.visit(this, o);
+        // Efvaluamos la condicion, esto se toma del BinaryExpression
+        String condBool = (String) ast.E.visit(this, o);
         
-        //Convertimos i32 a i1 para el jump
-        String condBool = newTemp("cond");
-        code.append("  " + condBool + " = icmp ne i32 " + condValue + ", 0\n");
         
         //Jump basado en condBool
         code.append("  br i1 " + condBool + ", label %" + thenLabel + ", label %" + elseLabel + "\n");
@@ -158,11 +155,49 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression ast, Object o) {
+        code.append("; Comienza BINARY_EXPRESSION \n");
         String leftReg = (String) ast.E1.visit(this, o);
         String rightReg = (String) ast.E2.visit(this, o);
-
-        String tmpReg = newTemp();
-        code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+        String tmpReg = newTemp("binaryRes");
+        String operation = ast.O.spelling;
+        
+        //No se si los tiene todos pero agregue todo lo que pude
+        switch (operation){
+            case "+":
+                code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "-":
+                code.append("  " + tmpReg + " = sub i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "*":
+                code.append("  " + tmpReg + " = mul i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "/":
+                code.append("  " + tmpReg + " = sdiv i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<":
+                code.append("  " + tmpReg + " = icmp slt i32" + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<=":
+                code.append("  " + tmpReg + " = icmp sle i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">":
+                code.append("  " + tmpReg + " = icmp sgt i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">=":
+                code.append("  " + tmpReg + " = icmp sge i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "=":
+                code.append("  " + tmpReg + " = icmp eq i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "!=":
+                code.append("  " + tmpReg + " = icmp ne i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            default:
+                System.out.println("AAAAAAAAAAA operador invalido no se como tirar un erro de triangle si es que tiene c lo menos");
+                return "0";
+        }
+        code.append("; Termina BINARY_EXPRESSION \n");
         return tmpReg;
     }
 
@@ -427,7 +462,7 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitOperator(Operator ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.spelling;
     }
     
 

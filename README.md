@@ -10,13 +10,13 @@
 - [x] visitAssignCommand
 - [x] visitCallCommand
 - [x] visitEmptyCommand
-- [ ] visitIfCommand
+- [x] visitIfCommand
 - [ ] visitSequentialCommand
 - [ ] visitWhileCommand
 
 ### EXPRESION
 - [ ] visitArrayExpression
-- [ ] visitBinaryExpression  - SUMA SOLO
+- [x] visitBinaryExpression
 - [ ] visitCallExpression
 - [x] visitCharacterExpression
 - [x] visitEmptyExpression

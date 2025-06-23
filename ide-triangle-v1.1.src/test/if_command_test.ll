@@ -5,10 +5,11 @@ entry:
   %x = alloca i32, align 4
   store i32 5, ptr %x, align 4
 ; Comienzo de IF_COMMAND 
+; Comienza BINARY_EXPRESSION 
   %tmp0 = load i32, ptr %x, align 4
-  %tmp1 = add i32 %tmp0, 3
-  %cond2 = icmp ne i32 %tmp1, 0
-  br i1 %cond2, label %then0, label %else1
+  %binaryRes1 = icmp eq i32 %tmp0, 3
+; Termina BINARY_EXPRESSION 
+  br i1 %binaryRes1, label %then0, label %else1
 then0:
   store i32 10, ptr %x, align 4
   br label %end_if2
