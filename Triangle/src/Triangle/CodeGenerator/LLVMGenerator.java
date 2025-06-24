@@ -41,6 +41,8 @@ public final class LLVMGenerator implements Visitor {
         ast.C.visit(this, arg);
         return null;
     }
+    
+    //////////////////////// COMMANDS
 
     @Override
     public Object visitLetCommand(LetCommand ast, Object arg) {
@@ -94,6 +96,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    ////////////////////////////// EXPRESION
+    
     @Override
     public Object visitArrayExpression(ArrayExpression ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -116,12 +120,14 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitCharacterExpression(CharacterExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        char ch = ast.CL.spelling.charAt(1); //Obtiene el valor delcentro del char como 'A'
+        int  ascii = (int) ch;
+        return String.valueOf(ascii);
     }
 
     @Override
     public Object visitEmptyExpression(EmptyExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "0";
     }
 
     @Override
@@ -154,6 +160,8 @@ public final class LLVMGenerator implements Visitor {
         return ast.V.visit(this, o);
     }
 
+    //////////////////////////////////// DECLARATION
+    
     @Override
     public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -189,6 +197,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    ////////////////////////////////// AGGREGATE
+    
     @Override
     public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -208,6 +218,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleRecordAggregate(SingleRecordAggregate ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ///////////////////////////////// FP - FORMAL PARAMETER
 
     @Override
     public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
@@ -229,6 +241,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    ///////////////////////////////////// FPS - FORMAL PARAMETER SEQUENCE
+    
     @Override
     public Object visitEmptyFormalParameterSequence(EmptyFormalParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -243,6 +257,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleFormalParameterSequence(SingleFormalParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ///////////////////////////////////// AP - ACTUAL PARAMETER
 
     @Override
     public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
@@ -264,6 +280,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    //////////////////////////////////// APS - ACTUAL PARAMETER SEQUENCE
+    
     @Override
     public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -278,6 +296,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ////////////////////////////////////// TYPE DENOTER
 
     @Override
     public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
@@ -329,9 +349,14 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    /////////////////////////////////////////////// LITERAL
+    
+    
     @Override
     public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        char ch = ast.spelling.charAt(1); // Obtiene el valor del centro de un carater, tipo 'A'; obtiene solo A
+        int ascii = (int) ch;
+        return String.valueOf(ascii); //Tira el valor:
     }
 
     @Override
@@ -341,13 +366,19 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIntegerLiteral(IntegerLiteral ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.spelling;
     }
 
+    
+    //////////////////////////// OPERATOR
+    
     @Override
     public Object visitOperator(Operator ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+
+    //////////////////////////////// VNAME
 
     @Override
     public Object visitDotVname(DotVname ast, Object o) {
