@@ -7,12 +7,16 @@ import static Triangle.CodeGenerator.Encoder.writeTableDetails;
 import Triangle.CodeGenerator.PrimitiveRoutine;
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
+import java.util.List;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class LLVMGenerator implements Visitor {
     private StringBuilder code;
     private Map<String, String> locals;
+    private List<String> functionArgs;
     private int tempCount;
     private int labelCount = 0; //Para generar nombre unigos en las etiquetas
     
@@ -44,6 +48,7 @@ public final class LLVMGenerator implements Visitor {
         this.reporter = reporter;
         this.code = new StringBuilder();
         locals = new HashMap<>();
+        functionArgs = new ArrayList<>();
         tempCount = 0;
         // Carga las declaraciones y llamadas de las funciones estandar
         this.elaborateStdEnvironment();        
@@ -96,7 +101,8 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitCallCommand(CallCommand ast, Object o) {
-        Integer argsSize = (Integer) ast.APS.visit(this, o);
+        functionArgs.clear();
+        Integer argsSize = (Integer) ast.APS.visit(this, o);        
         ast.I.visit(this, o);
         return null;
     }
@@ -240,10 +246,9 @@ public final class LLVMGenerator implements Visitor {
     }
 
     @Override
-    public Object visitCharacterExpression(CharacterExpression ast, Object o) {
-        Integer valSize = (Integer) ast.type.visit(this, null);
-        char ch = ast.CL.spelling.charAt(1); //Obtiene el valor delcentro del char como 'A'
-        int  ascii = (int) ch;
+    public Object visitCharacterExpression(CharacterExpression ast, Object o) {        
+        char ch = ast.CL.spelling.charAt(1); //Obtiene el valor delcentro del char como 'A'        
+        int ascii = (int) ch;
         return String.valueOf(ascii);
     }
 
@@ -384,7 +389,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.E.visit (this, o);
     }
 
     @Override
@@ -406,17 +411,22 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return 0;
     }
 
     @Override
     public Object visitMultipleActualParameterSequence(MultipleActualParameterSequence ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String reg1 = (String) ast.AP.visit(this, o);
+        functionArgs.add(reg1);
+        ast.APS.visit(this, o);
+        return o;
     }
 
     @Override
     public Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String reg = (String) ast.AP.visit(this, o);
+        functionArgs.add(reg);
+        return o;
     }
     
     ////////////////////////////////////// TYPE DENOTER
@@ -479,7 +489,7 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
-        char ch = ast.spelling.charAt(1); // Obtiene el valor del centro de un carater, tipo 'A'; obtiene solo A
+        char ch = ast.spelling.charAt(1); // Obtiene el valor del centro de un carater, tipo 'A'; obtiene solo A        
         int ascii = (int) ch;
         return String.valueOf(ascii); //Tira el valor:
     }
@@ -487,11 +497,8 @@ public final class LLVMGenerator implements Visitor {
     @Override
     public Object visitIdentifier(Identifier ast, Object o) {
         if (ast.decl.entity instanceof PrimitiveRoutine) {
-          String callInstr = ((PrimitiveRoutine) ast.decl.entity).call;          
-          String varName = (String) o;
-          String tmpReg = newTemp();
-          code.append(String.format("%s = load i%d, ptr %s", tmpReg, ast.type.entity.size, varName));
-          code.append(String.format(callInstr, varName));
+          String callInstr = ((PrimitiveRoutine) ast.decl.entity).call;                    
+          code.append(String.format(callInstr, functionArgs.toArray()));
         } else { 
           this.reporter.reportError("el identificador no se encontro", ast.spelling, ast.position);
         }
@@ -534,16 +541,18 @@ public final class LLVMGenerator implements Visitor {
     }
     
     private final void elaborateStdPrimRoutine (Declaration routineDeclaration, String call) {
-    routineDeclaration.entity = new PrimitiveRoutine (call);    
+        routineDeclaration.entity = new PrimitiveRoutine (call);    
   }
 
     private final void elaborateStdEnvironment() {        
         //Declarations
-        code.append("@stringFormat.char = private unnamed_addr constant [3 x i8] c\"%c\\00\", align 1");        
-        
+        code.append(";Constantes \n");
+        code.append("@stringFormat.char = private unnamed_addr constant [3 x i8] c\"%c\\00\", align 1 \n");        
+        code.append(";Funciones \n");
+        code.append("declare i32 @printf(ptr noundef, ...) #1 \n");
         // Calls
     //    elaborateStdPrimRoutine(StdEnvironment.getDecl, Machine);
-          elaborateStdPrimRoutine(StdEnvironment.putDecl, "call i32 (ptr, ...) @printf(ptr noundef @.stringFormat.char, i8 noundef %s)");
+          elaborateStdPrimRoutine(StdEnvironment.putDecl,  "  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef %s) \n");
     //    elaborateStdPrimRoutine(StdEnvironment.getintDecl, Machine.getintDisplacement);
     //    elaborateStdPrimRoutine(StdEnvironment.putintDecl, Machine.putintDisplacement);
     //    elaborateStdPrimRoutine(StdEnvironment.geteolDecl, Machine.geteolDisplacement);

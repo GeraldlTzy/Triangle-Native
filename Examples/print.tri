@@ -1,6 +1,3 @@
-let 
-    var c: Char
-in begin
-    c :=  'z';
-     put(c)
+begin
+     put('c')
 end
