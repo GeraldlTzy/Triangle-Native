@@ -16,6 +16,8 @@ if exist output.exe (
     echo Ejecutando %filename%
     echo ==== Resultado ====
     output.exe
+
+    echo.
     echo ==== Fin ====
     
 ) else (

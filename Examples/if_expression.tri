@@ -1,0 +1,8 @@
+let
+  var x: Integer;
+  var result: Integer
+in begin
+    x := 0;
+    result := if x > 1 then 10 else 20;
+    putint(result)
+end

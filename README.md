@@ -21,9 +21,9 @@
 - [ ] visitCallExpression
 - [x] visitCharacterExpression
 - [x] visitEmptyExpression
-- [ ] visitIfExpression
+- [x] visitIfExpression
 - [x] visitIntegerExpression
-- [ ] visitLetExpression
+- [x] visitLetExpression
 - [ ] visitRecordExpression
 - [ ] visitUnaryExpression
 - [x] visitVnameExpression
@@ -87,3 +87,10 @@
 - [ ] visitDotVname
 - [ ] visitSimpleVname
 - [ ] visitSubscriptVname
+
+
+### Otras Funciones
+- [x] get()
+- [x] put()
+- [x] getchar()
+- [x] putint()
