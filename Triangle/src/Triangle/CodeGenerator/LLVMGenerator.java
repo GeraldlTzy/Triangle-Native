@@ -54,7 +54,7 @@ public final class LLVMGenerator implements Visitor {
         this.elaborateStdEnvironment();        
     }
     public String generate(Program ast) {
-        code.append("; Código LLVM generado por Triangle\n\n");
+        code.append("\n; Código LLVM generado por Triangle\n\n");
         code.append("define i32 @main() {\n");
         code.append("entry:\n");
 
@@ -546,9 +546,9 @@ public final class LLVMGenerator implements Visitor {
 
     private final void elaborateStdEnvironment() {        
         //Declarations
-        code.append(";Constantes \n");
+        code.append("\n;Constantes \n");
         code.append("@stringFormat.char = private unnamed_addr constant [3 x i8] c\"%c\\00\", align 1 \n");        
-        code.append(";Funciones \n");
+        code.append("\n;Funciones \n");
         code.append("declare i32 @printf(ptr noundef, ...) #1 \n");
         // Calls
     //    elaborateStdPrimRoutine(StdEnvironment.getDecl, Machine);

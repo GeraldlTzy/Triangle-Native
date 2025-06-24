@@ -1,0 +1,6 @@
+let
+     var c: Char
+in begin
+     c := 'c';
+     put(c)
+end
