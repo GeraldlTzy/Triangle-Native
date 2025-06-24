@@ -653,14 +653,14 @@ public class Main extends javax.swing.JFrame {
             try {
                 // 1. Obtener el AST y generar LLVM
                 String llvmCode = compiler.getLLVMCode();
-                // 2. Mostrar código LLVM en panel
+                // 2. Mostrar cÃ³digo LLVM en panel
                 ((FileFrame)desktopPane.getSelectedFrame()).setLLVMCode(llvmCode);
                 // 3. Guardar archivo .ll en disco
                 String path = desktopPane.getSelectedFrame().getTitle().replace(".tri", ".ll");
                 Files.writeString(Paths.get(path), llvmCode, StandardCharsets.UTF_8);
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error generando código LLVM:\n" + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Error generando cdigo LLVM:\n" + e.getMessage());
             }
         } else {
             ((FileFrame)desktopPane.getSelectedFrame()).highlightError(compiler.getErrorPosition());

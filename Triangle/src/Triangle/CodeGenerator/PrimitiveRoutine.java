@@ -24,8 +24,15 @@ public class PrimitiveRoutine extends RuntimeEntity {
   public PrimitiveRoutine (int size, int displacement) {
     super (size);
     this.displacement = displacement;
+    
+  }
+  
+  public PrimitiveRoutine (String call) {        
+      super(0);
+      this.call = call;
   }
 
   public int displacement;
+  public String call;
 
 }

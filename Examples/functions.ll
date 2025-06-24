@@ -1,4 +1,4 @@
-; Código LLVM generado por Triangle
+@stringFormat.char = private unnamed_addr constant [3 x i8] c"%c\00", align 1; Código LLVM generado por Triangle
 
 define i32 @main() {
 entry:

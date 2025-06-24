@@ -1,8 +1,12 @@
 package Triangle.CodeGenerator;
 
+import TAM.Machine;
 import Triangle.AbstractSyntaxTrees.*;
 import Triangle.AbstractSyntaxTrees.Visitor;
+import static Triangle.CodeGenerator.Encoder.writeTableDetails;
+import Triangle.CodeGenerator.PrimitiveRoutine;
 import Triangle.ErrorReporter;
+import Triangle.StdEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +26,8 @@ public final class LLVMGenerator implements Visitor {
         this.code = new StringBuilder();
         locals = new HashMap<>();
         tempCount = 0;
+        // Carga las declaraciones y llamadas de las funciones estandar
+        this.elaborateStdEnvironment();        
     }
     public String generate(Program ast) {
         code.append("; Código LLVM generado por Triangle\n\n");
@@ -69,7 +75,9 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitCallCommand(CallCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Integer argsSize = (Integer) ast.APS.visit(this, o);
+        ast.I.visit(this, o);
+        return null;
     }
     
     @Override
@@ -116,7 +124,16 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitCharacterExpression(CharacterExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Integer valSize = (Integer) ast.type.visit(this, null);
+        
+        //Nuevo registro anonimo
+        String tmpReg = newTemp();
+        //Alocar memoria
+        code.append(String.format("%s = alloca i8", tmpReg));
+        // Guardar expresion
+        code.append(String.format("store i8 %c, ptr %s", ast.CL.spelling.charAt(1), tmpReg));        
+        
+        return valSize;
     }
 
     @Override
@@ -296,7 +313,10 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitCharTypeDenoter(CharTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (ast.entity == null) {
+        ast.entity = new TypeRepresentation(Machine.characterSize);        
+    }
+    return new Integer(Machine.characterSize);
     }
 
     @Override
@@ -336,7 +356,16 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIdentifier(Identifier ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (ast.decl.entity instanceof PrimitiveRoutine) {
+          String callInstr = ((PrimitiveRoutine) ast.decl.entity).call;          
+          String varName = (String) o;
+          String tmpReg = newTemp();
+          code.append(String.format("%s = load i%d, ptr %s", tmpReg, ast.type.entity.size, varName));
+          code.append(String.format(callInstr, varName));
+        } else { 
+          this.reporter.reportError("el identificador no se encontro", ast.spelling, ast.position);
+        }
+        return null;
     }
 
     @Override
@@ -367,4 +396,24 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSubscriptVname(SubscriptVname ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    private final void elaborateStdPrimRoutine (Declaration routineDeclaration, String call) {
+    routineDeclaration.entity = new PrimitiveRoutine (call);    
+  }
+
+    private final void elaborateStdEnvironment() {        
+        //Declarations
+        code.append("@stringFormat.char = private unnamed_addr constant [3 x i8] c\"%c\\00\", align 1");        
+        
+        // Calls
+    //    elaborateStdPrimRoutine(StdEnvironment.getDecl, Machine);
+          elaborateStdPrimRoutine(StdEnvironment.putDecl, "call i32 (ptr, ...) @printf(ptr noundef @.stringFormat.char, i8 noundef %s)");
+    //    elaborateStdPrimRoutine(StdEnvironment.getintDecl, Machine.getintDisplacement);
+    //    elaborateStdPrimRoutine(StdEnvironment.putintDecl, Machine.putintDisplacement);
+    //    elaborateStdPrimRoutine(StdEnvironment.geteolDecl, Machine.geteolDisplacement);
+    //    elaborateStdPrimRoutine(StdEnvironment.puteolDecl, Machine.puteolDisplacement);
+
+      }
 }
+
+  
