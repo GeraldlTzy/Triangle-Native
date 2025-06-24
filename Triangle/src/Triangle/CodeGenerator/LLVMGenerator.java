@@ -79,15 +79,7 @@ public final class LLVMGenerator implements Visitor {
         ast.D.visit(this, arg);
         ast.C.visit(this, arg);
         return null;
-    }
-    @Override
-    public Object visitVarDeclaration(VarDeclaration ast, Object arg) {
-        String varName = ast.I.spelling;
-        String regName = "%" + varName;
-        locals.put(varName, regName);
-        code.append("  " + regName + " = alloca i32, align 4\n");
-        return null;
-    }
+    }    
 
   @Override
     public Object visitAssignCommand(AssignCommand ast, Object arg) {
@@ -290,6 +282,15 @@ public final class LLVMGenerator implements Visitor {
     //////////////////////////////////// DECLARATION
     
     @Override
+    public Object visitVarDeclaration(VarDeclaration ast, Object arg) {
+        String varName = ast.I.spelling;
+        String regName = "%" + varName;
+        locals.put(varName, regName);       
+        code.append("  " + regName + " = alloca i32, align 4\n");
+        return null;
+    }
+    
+    @Override
     public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -311,7 +312,9 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ast.D1.visit(this, o);
+        ast.D2.visit(this, o);
+        return null;
     }
 
     @Override
@@ -403,8 +406,8 @@ public final class LLVMGenerator implements Visitor {
     }
 
     @Override
-    public Object visitVarActualParameter(VarActualParameter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Object visitVarActualParameter(VarActualParameter ast, Object o) {                
+        return locals.get(((SimpleVname) ast.V).I.spelling);  //Retorna el puntero de la variable        
     }
 
     //////////////////////////////////// APS - ACTUAL PARAMETER SEQUENCE
@@ -496,10 +499,17 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIdentifier(Identifier ast, Object o) {
-        if (ast.decl.entity instanceof PrimitiveRoutine) {
-          String callInstr = ((PrimitiveRoutine) ast.decl.entity).call;                    
-          code.append(String.format(callInstr, functionArgs.toArray()));
+        if (ast.decl.entity instanceof PrimitiveRoutine) {          
+          //Funciones estandar
+          String callInstr = ((PrimitiveRoutine) ast.decl.entity).call;
+          if (callInstr.contains("@printf")){
+              code.append(String.format(callInstr, functionArgs.toArray()));
+          } else if (callInstr.contains("@get")){
+             String tmpReg = newTemp();
+             code.append(String.format(callInstr, tmpReg, tmpReg, functionArgs.getFirst()));
+          }                              
         } else { 
+            //Funciones normales
           this.reporter.reportError("el identificador no se encontro", ast.spelling, ast.position);
         }
         return null;
@@ -527,12 +537,13 @@ public final class LLVMGenerator implements Visitor {
     }
 
     @Override
-    public Object visitSimpleVname(SimpleVname ast, Object o) {
+    public Object visitSimpleVname(SimpleVname ast, Object o) {                
+        //Cargar el valor de la variable
         String varName = ast.I.spelling;
         String ptr = locals.get(varName);
         String tmpReg = newTemp();
         code.append("  " + tmpReg + " = load i32, ptr " + ptr + ", align 4\n");
-        return tmpReg;
+        return tmpReg;              
     }
 
     @Override
@@ -548,16 +559,36 @@ public final class LLVMGenerator implements Visitor {
         //Declarations
         code.append("\n;Constantes \n");
         code.append("@stringFormat.char = private unnamed_addr constant [3 x i8] c\"%c\\00\", align 1 \n");        
+        code.append("@stringFormat.int = private unnamed_addr constant [3 x i8] c\"%d\\00\", align 1 \n");        
         code.append("\n;Funciones \n");
         code.append("declare i32 @printf(ptr noundef, ...) #1 \n");
+        code.append("declare i32 @getchar() #2 \n");
+        code.append("""
+                    
+                    define dso_local i32 @get() #0 {
+                      %1 = alloca i32, align 4
+                      %2 = call i32 @getchar()
+                      store i32 %2, ptr %1, align 4
+                      br label %Get.loop1
+                    
+                    Get.loop1:  
+                      %4 = call i32 @getchar()
+                      %5 = icmp ne i32 %4, 10
+                      br i1 %5, label %Get.loop2, label %Get.loop3
+                    
+                    Get.loop2:   
+                      br label %Get.loop1
+                    
+                    Get.loop3:   
+                      %8 = load i32, ptr %1, align 4
+                      ret i32 %8
+                    }\n""");
+        
         // Calls
-    //    elaborateStdPrimRoutine(StdEnvironment.getDecl, Machine);
+          elaborateStdPrimRoutine(StdEnvironment.getDecl, "  %s = call i32 @get() \n  store i32 %s, ptr %s \n"); //Leer valor y guardarlo
           elaborateStdPrimRoutine(StdEnvironment.putDecl,  "  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef %s) \n");
-    //    elaborateStdPrimRoutine(StdEnvironment.getintDecl, Machine.getintDisplacement);
-    //    elaborateStdPrimRoutine(StdEnvironment.putintDecl, Machine.putintDisplacement);
-    //    elaborateStdPrimRoutine(StdEnvironment.geteolDecl, Machine.geteolDisplacement);
-    //    elaborateStdPrimRoutine(StdEnvironment.puteolDecl, Machine.puteolDisplacement);
-
+          elaborateStdPrimRoutine(StdEnvironment.getintDecl, "  %s = call i32 @get() \n  store i32 %s, ptr %s \n");
+          elaborateStdPrimRoutine(StdEnvironment.putintDecl, "  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %s) \n");
       }
 }
 

@@ -1,6 +1,9 @@
 let
-     var c: Char
+     var c: Char;
+     var i: Integer
 in begin
-     c := 'c';
-     put(c)
+     c := ':';
+     i := 3;
+     put(c);
+     putint(i)
 end

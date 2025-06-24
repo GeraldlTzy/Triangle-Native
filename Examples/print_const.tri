@@ -1,3 +1,4 @@
 begin
-     put('c')
+     putint(8);
+     put('D')
 end

@@ -1,0 +1,11 @@
+let
+     var i: Integer;
+     var c: Char
+in begin
+     i:=4;
+     c:= 'k';
+     getint(var i);
+     putint(i);
+     get(var c);
+     put(c)
+end
