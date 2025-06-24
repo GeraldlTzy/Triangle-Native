@@ -14,10 +14,29 @@ public final class LLVMGenerator implements Visitor {
     private StringBuilder code;
     private Map<String, String> locals;
     private int tempCount;
+    private int labelCount = 0; //Para generar nombre unigos en las etiquetas
     
+    // Genera un registro tipo %tmpX
     private String newTemp() {
         return "%tmp" + (tempCount++);
     }
+    // Overload de newTemp para poder ponerle un nombre cualquiera al registro
+    //Esto hace mas facil el debug pq genera .ll mas legible
+    private String newTemp(String name) {
+        return "%" + name + (tempCount++);
+    }
+    
+    //Genera una nueva label con un nombre unico
+    //Toma name como parametro para darle un nombre significatico a la etiqueta
+    //name solo tiene fines de debug, y leer el codigo llvm, no tiene nada funcioonal
+    private String newLabel(String name) {
+        return name + (labelCount++);
+    }
+    //Overload de newLabel si no importa el nombre de la etiqueta
+    private String newLabel(){
+        return "label" + (labelCount++);
+    }
+    
 
     private final ErrorReporter reporter;
 
@@ -47,6 +66,8 @@ public final class LLVMGenerator implements Visitor {
         ast.C.visit(this, arg);
         return null;
     }
+    
+    //////////////////////// COMMANDS
 
     @Override
     public Object visitLetCommand(LetCommand ast, Object arg) {
@@ -87,7 +108,38 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIfCommand(IfCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Generamos etiquetas unicas para mostrar el else, el then y el fin dew un if
+        code.append("; Comienzo de IF_COMMAND \n");
+        String thenLabel = newLabel("then");
+        String elseLabel = newLabel("else");
+        String endIfLabel = newLabel("end_if");
+        
+        // Efvaluamos la condicion, esto se toma del BinaryExpression
+        String condBool = (String) ast.E.visit(this, o);
+        
+        
+        //Jump basado en condBool
+        code.append("  br i1 " + condBool + ", label %" + thenLabel + ", label %" + elseLabel + "\n");
+        
+        //THEN
+        code.append(thenLabel + ":\n");
+        ast.C1.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        //BLoque else
+        code.append(elseLabel + ":\n");
+        ast.C2.visit(this, o);
+        //salto a fin
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        // Etiqueta de fin
+        code.append(endIfLabel + ":\n");
+        
+        code.append("; Fin de IF_COMMAND \n");
+        
+        return null;
+        
     }
 
     @Override
@@ -99,9 +151,36 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitWhileCommand(WhileCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        //Generamos las etiquetas que necesitemos
+        code.append("; Comienza WHILE_COMMAND \n");
+        String startLabel = newLabel("while_start");
+        String endLabel = newLabel("while_end");
+        String bodyLabel = newLabel("while_body");
+        
+        code.append("  br label %" + startLabel + "\n");
+        code.append(startLabel + ": \n");
+        String condBool = (String) ast.E.visit(this, o); //Se trae el Binary expresison
+        
+        // branch para ver si la coindicion del while es true
+        code.append("  br i1 " + condBool + ", label %" + bodyLabel + ", label %" + endLabel + "\n");
+        
+        // Si es true, el body del while y se salta otra vez a start
+        code.append(bodyLabel + ": \n");
+        ast.C.visit(this, o);
+        
+        code.append("  br label %" + startLabel + "\n");
+        
+        //Si es false se salta a fin
+        code.append(endLabel + ": \n");
+        
+        code.append("; Termina WHILE_COMMAND \n");
+        //No necesita retornar nada 
+        return null;
+        
     }
 
+    ////////////////////////////// EXPRESION
+    
     @Override
     public Object visitArrayExpression(ArrayExpression ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -109,11 +188,49 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression ast, Object o) {
+        code.append("; Comienza BINARY_EXPRESSION \n");
         String leftReg = (String) ast.E1.visit(this, o);
         String rightReg = (String) ast.E2.visit(this, o);
-
-        String tmpReg = newTemp();
-        code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+        String tmpReg = newTemp("binaryRes");
+        String operation = ast.O.spelling;
+        
+        //No se si los tiene todos pero agregue todo lo que pude
+        switch (operation){
+            case "+":
+                code.append("  " + tmpReg + " = add i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "-":
+                code.append("  " + tmpReg + " = sub i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "*":
+                code.append("  " + tmpReg + " = mul i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "/":
+                code.append("  " + tmpReg + " = sdiv i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<":
+                code.append("  " + tmpReg + " = icmp slt i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "<=":
+                code.append("  " + tmpReg + " = icmp sle i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">":
+                code.append("  " + tmpReg + " = icmp sgt i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case ">=":
+                code.append("  " + tmpReg + " = icmp sge i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "=":
+                code.append("  " + tmpReg + " = icmp eq i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            case "!=":
+                code.append("  " + tmpReg + " = icmp ne i32 " + leftReg + ", " + rightReg + "\n");
+                break;
+            default:
+                System.out.println("AAAAAAAAAAA operador invalido no se como tirar un erro de triangle si es que tiene c lo menos");
+                return "0";
+        }
+        code.append("; Termina BINARY_EXPRESSION \n");
         return tmpReg;
     }
 
@@ -125,20 +242,14 @@ public final class LLVMGenerator implements Visitor {
     @Override
     public Object visitCharacterExpression(CharacterExpression ast, Object o) {
         Integer valSize = (Integer) ast.type.visit(this, null);
-        
-        //Nuevo registro anonimo
-        String tmpReg = newTemp();
-        //Alocar memoria
-        code.append(String.format("%s = alloca i8", tmpReg));
-        // Guardar expresion
-        code.append(String.format("store i8 %c, ptr %s", ast.CL.spelling.charAt(1), tmpReg));        
-        
-        return valSize;
+        char ch = ast.CL.spelling.charAt(1); //Obtiene el valor delcentro del char como 'A'
+        int  ascii = (int) ch;
+        return String.valueOf(ascii);
     }
 
     @Override
     public Object visitEmptyExpression(EmptyExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return "0";
     }
 
     @Override
@@ -171,6 +282,8 @@ public final class LLVMGenerator implements Visitor {
         return ast.V.visit(this, o);
     }
 
+    //////////////////////////////////// DECLARATION
+    
     @Override
     public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -206,6 +319,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    ////////////////////////////////// AGGREGATE
+    
     @Override
     public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -225,6 +340,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleRecordAggregate(SingleRecordAggregate ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ///////////////////////////////// FP - FORMAL PARAMETER
 
     @Override
     public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
@@ -246,6 +363,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    ///////////////////////////////////// FPS - FORMAL PARAMETER SEQUENCE
+    
     @Override
     public Object visitEmptyFormalParameterSequence(EmptyFormalParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -260,6 +379,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleFormalParameterSequence(SingleFormalParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ///////////////////////////////////// AP - ACTUAL PARAMETER
 
     @Override
     public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
@@ -281,6 +402,8 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    //////////////////////////////////// APS - ACTUAL PARAMETER SEQUENCE
+    
     @Override
     public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -295,6 +418,8 @@ public final class LLVMGenerator implements Visitor {
     public Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    ////////////////////////////////////// TYPE DENOTER
 
     @Override
     public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
@@ -349,9 +474,14 @@ public final class LLVMGenerator implements Visitor {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    /////////////////////////////////////////////// LITERAL
+    
+    
     @Override
     public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        char ch = ast.spelling.charAt(1); // Obtiene el valor del centro de un carater, tipo 'A'; obtiene solo A
+        int ascii = (int) ch;
+        return String.valueOf(ascii); //Tira el valor:
     }
 
     @Override
@@ -370,13 +500,19 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIntegerLiteral(IntegerLiteral ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.spelling;
     }
 
+    
+    //////////////////////////// OPERATOR
+    
     @Override
     public Object visitOperator(Operator ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.spelling;
     }
+    
+
+    //////////////////////////////// VNAME
 
     @Override
     public Object visitDotVname(DotVname ast, Object o) {
