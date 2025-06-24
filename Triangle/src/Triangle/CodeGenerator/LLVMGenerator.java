@@ -251,7 +251,44 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitIfExpression(IfExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Generamos etiquetas unicas para mostrar el else, el then y el fin dew un if
+        code.append("; Comienzo de IF_EXPRESSION \n");
+        String thenLabel = newLabel("then");
+        String elseLabel = newLabel("else");
+        String endIfLabel = newLabel("end_if");
+        
+        //Reservamos espacio para el resultado del if
+        String resultPtr = newTemp("if_result_ptr");
+        code.append("  " + resultPtr + " = alloca i32, align 4\n");
+        
+        // Efvaluamos la condicion, esto se toma del BinaryExpression
+        String condBool = (String) ast.E1.visit(this, o);
+        
+        //Jump basado en condBool
+        code.append("  br i1 " + condBool + ", label %" + thenLabel + ", label %" + elseLabel + "\n");
+        
+        //THEN
+        code.append(thenLabel + ":\n");
+        String thenVal = (String) ast.E2.visit(this, o);
+        code.append("  store i32 " + thenVal + ", ptr " + resultPtr + ", align 4\n");
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        //BLoque else
+        code.append(elseLabel + ":\n");
+        String elseVal = (String) ast.E3.visit(this, o);
+        code.append("  store i32 " + elseVal + ", ptr " + resultPtr + ", align 4\n");
+        code.append("  br label %" + endIfLabel + "\n");
+        
+        // Etiqueta de fin
+        code.append(endIfLabel + ":\n");
+        
+        //Carga el valor del resultado
+        String resultVal = newTemp("if_result");
+        code.append("  " + resultVal + " = load i32, ptr " + resultPtr + ", align 4\n");
+        
+        code.append("; Fin de IF_EXPRESSION \n");
+        
+        return resultVal;
     }
 
     @Override
@@ -261,7 +298,17 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitLetExpression(LetExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+       /*
+            let 
+                var x: Integer
+            in
+                X+2
+        */
+       code.append("; Comienza LET_EXPRESSION\n");
+       ast.D.visit(this, o);
+       String exprResult = (String) ast.E.visit(this, o);
+       code.append("; Termina LET_EXPRESSION\n"); 
+       return exprResult;
     }
 
     @Override
@@ -506,7 +553,7 @@ public final class LLVMGenerator implements Visitor {
               code.append(String.format(callInstr, functionArgs.toArray()));
           } else if (callInstr.contains("@get")){
              String tmpReg = newTemp();
-             code.append(String.format(callInstr, tmpReg, tmpReg, functionArgs.getFirst()));
+             code.append(String.format(callInstr, tmpReg, tmpReg, functionArgs.get(0)));
           }                              
         } else { 
             //Funciones normales
@@ -541,7 +588,7 @@ public final class LLVMGenerator implements Visitor {
         //Cargar el valor de la variable
         String varName = ast.I.spelling;
         String ptr = locals.get(varName);
-        String tmpReg = newTemp();
+        String tmpReg = newTemp("varName");
         code.append("  " + tmpReg + " = load i32, ptr " + ptr + ", align 4\n");
         return tmpReg;              
     }

@@ -30,7 +30,10 @@ Get.loop3:
 
 define i32 @main() {
 entry:
-  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef 8) 
-  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef 68) 
+  %result = alloca i32, align 4
+; Comienza LET_EXPRESSION
+  %a = alloca i32, align 4
+; Termina LET_EXPRESSION
+  store i32 5, ptr %result, align 4
   ret i32 0
 }
