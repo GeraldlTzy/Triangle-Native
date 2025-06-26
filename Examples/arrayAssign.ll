@@ -31,6 +31,7 @@ Get.loop3:
 define i32 @main() {
 entry:
   %c = alloca [5 x i32], align 16
+  %x = alloca i32, align 4
 ; Comienza ARRAY_EXPRESSION 
   %index0 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 0
   store i32 4, ptr %index0, align 4
@@ -42,8 +43,16 @@ entry:
   store i32 6, ptr %index3, align 4
   %index4 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 4
   store i32 7, ptr %index4, align 4
-  %arrayPtr5 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 3
+  %arrayPtr5 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 4
   %arrayValue6 = load i32, ptr %arrayPtr5, align 4
   call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %arrayValue6) 
+  %arrayValue7 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 4
+  store i32 5, ptr %arrayValue7, align 4
+  %arrayPtr8 = getelementptr inbounds [5 x i32], ptr %c, i64 0, i64 4
+  %arrayValue9 = load i32, ptr %arrayPtr8, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %arrayValue9) 
+  store i32 3, ptr %x, align 4
+  %varName10 = load i32, ptr %x, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %varName10) 
   ret i32 0
 }

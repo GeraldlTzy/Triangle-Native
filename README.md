@@ -16,7 +16,7 @@
 
 
 ### EXPRESION
-- [ ] visitArrayExpression
+- [x] visitArrayExpression
 - [x] visitBinaryExpression
 - [ ] visitCallExpression
 - [x] visitCharacterExpression
@@ -38,8 +38,8 @@
 - [ ] visitUnaryOperatorDeclaration
 
 ### AGGREGATE
-- [ ] visitMultipleArrayAggregate
-- [ ] visitSingleArrayAggregate
+- [x] visitMultipleArrayAggregate
+- [x] visitSingleArrayAggregate
 - [ ] visitMultipleRecordAggregate
 - [ ] visitSingleRecordAggregate
     
@@ -55,19 +55,19 @@
 - [ ] visitSingleFormalParameterSequence
     
 ### AP - ACTUAL PARAMETER
-- [ ] visitConstActualParameter
+- [x] visitConstActualParameter
 - [ ] visitFuncActualParameter
 - [ ] visitProcActualParameter
 - [ ] visitVarActualParameter
 
 ### APS - ACTUAL PARAMETER SEQUENCE
 - [ ] visitEmptyActualParameterSequence
-- [ ] visitMultipleActualParameterSequence
-- [ ] visitSingleActualParameterSequence
+- [x] visitMultipleActualParameterSequence
+- [x] visitSingleActualParameterSequence
     
 ### TYPE DENOTER
 - [ ] visitAnyTypeDenoter
-- [ ] visitArrayTypeDenoter
+- [x] visitArrayTypeDenoter
 - [ ] visitBoolTypeDenoter
 - [ ] visitCharTypeDenoter
 - [ ] visitErrorTypeDenoter
@@ -85,8 +85,8 @@
 
 ### VNAME
 - [ ] visitDotVname
-- [ ] visitSimpleVname
-- [ ] visitSubscriptVname
+- [x] visitSimpleVname
+- [x] visitSubscriptVname
 
 
 ### Otras Funciones

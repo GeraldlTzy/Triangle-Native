@@ -1,0 +1,14 @@
+let
+	var c: array 5 of Integer;
+	var x : Integer
+
+in begin
+
+	c := [4,4,5,6,7];
+	putint(c[4]);
+	c[4] := 5;
+	putint(c[4]);
+	x := 3;
+	putint(x)
+
+end

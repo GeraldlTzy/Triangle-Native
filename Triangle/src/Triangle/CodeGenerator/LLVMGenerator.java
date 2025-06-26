@@ -83,11 +83,52 @@ public final class LLVMGenerator implements Visitor {
 
   @Override
     public Object visitAssignCommand(AssignCommand ast, Object arg) {
-        String varName = ((SimpleVname) ast.V).I.spelling;
-        String ptr = locals.get(varName); // %n
-        String value = (String) ast.E.visit(this, arg);
+        SimpleVname varName;
+        TypeDenoter type = ast.V.type;
+        
+        //En el caso de que sea un array // c[0] = 5
+        if(ast.V instanceof SubscriptVname subscriptVname){
+            varName = (SimpleVname) subscriptVname.V;
+            String ptr = locals.get(varName.I.spelling); // %n
+            String index = (String) subscriptVname.E.visit(this, arg);
+            String arraySize = (String)(varName.type.visit(this, null));
+            
+            String tmpReg = newTemp("arrayValue");
+            code.append(String.format("  %s = getelementptr inbounds [%s x i32], ptr %s, i64 0, i64 %s\n",tmpReg, arraySize, ptr, index));
+            String value = (String) ast.E.visit(this, arg);
+            code.append("  store i32 " + value + ", ptr " + tmpReg + ", align 4\n");
+                
+        } else{
+            
+            varName = (SimpleVname) ast.V;     
+            String ptr = locals.get(varName.I.spelling); // %n
+            //Si es un Array // c = [1,2,3,4,5]
+            if(type instanceof ArrayTypeDenoter){
 
-        code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
+                List<String> arrayValues = (List<String>) ast.E.visit(this, null);
+
+                for (int i = 0; i < arrayValues.size(); i++) {
+
+                    String tmpReg = newTemp("index");
+                    String value = (String) arrayValues.get(i);
+
+                    code.append(String.format("  %s = getelementptr inbounds [%d x i32], ptr %s, i64 0, i64 %d\n",tmpReg, arrayValues.size(), ptr, i));
+                    code.append(String.format("  store i32 %s, ptr %s, align 4\n",value, tmpReg));
+                }
+                //Dejaré esto por aquí por si al final el assignCommand no se necesite hacer así
+                /*
+                ArrayExpression array = (ArrayExpression) ast.E;
+                int arrayIndex = 0;
+                Object[] args = new Object[] { ptr, arrayIndex };
+                array.visit(this, args);
+                */
+
+            } else{
+                String value = (String) ast.E.visit(this, arg);
+                code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
+            }
+        }
+            
         return null;
     }
 
@@ -181,7 +222,9 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitArrayExpression(ArrayExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        code.append("; Comienza ARRAY_EXPRESSION \n");
+        ArrayList<Expression> arrayList = (ArrayList<Expression>) ast.AA.visit(this, o);
+        return arrayList;
     }
 
     @Override
@@ -332,8 +375,14 @@ public final class LLVMGenerator implements Visitor {
     public Object visitVarDeclaration(VarDeclaration ast, Object arg) {
         String varName = ast.I.spelling;
         String regName = "%" + varName;
-        locals.put(varName, regName);       
-        code.append("  " + regName + " = alloca i32, align 4\n");
+        locals.put(varName, regName); 
+        if(ast.T instanceof ArrayTypeDenoter){
+            String arraySize = (String) ast.T.visit(this, arg);
+            code.append("  " + regName + " = alloca [" + arraySize + " x i32], align 16\n");
+        } else{
+            code.append("  " + regName + " = alloca i32, align 4\n");
+        }
+        
         return null;
     }
     
@@ -378,12 +427,22 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<String> result = new ArrayList<>();
+        String expressionValue = (String) ast.E.visit(this, null);
+        result.add(expressionValue);
+
+        List<String> expressionsArray = (List<String>) ast.AA.visit(this, null);
+        result.addAll(expressionsArray);
+
+        return result;
     }
 
     @Override
-    public Object visitSingleArrayAggregate(SingleArrayAggregate ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Object visitSingleArrayAggregate(SingleArrayAggregate ast, Object o) {  
+        List<String> result = new ArrayList<>();
+        String expressionValue = (String) ast.E.visit(this, null);
+        result.add(expressionValue);
+        return result;
     }
 
     @Override
@@ -488,7 +547,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return ast.IL.spelling;
     }
 
     @Override
@@ -595,7 +654,21 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitSubscriptVname(SubscriptVname ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        //Cargar el valor de un array
+        SimpleVname vName = (SimpleVname) ast.V;
+        String varName = vName.I.spelling;
+        String ptr = locals.get(varName);
+        String arraySize = (String) vName.type.visit(this, null);
+        
+        String tmpReg = newTemp("arrayPtr");
+        String index = (String) ast.E.visit(this, null);
+        
+        code.append("  " + tmpReg + " = getelementptr inbounds [" + arraySize +" x i32], ptr " + ptr + ", i64 0, i64 " + index + "\n");
+        
+        String finalReg = newTemp("arrayValue");
+        code.append("  " + finalReg + " = load i32, ptr " + tmpReg + ", align 4\n");
+        
+        return finalReg;
     }
     
     private final void elaborateStdPrimRoutine (Declaration routineDeclaration, String call) {
