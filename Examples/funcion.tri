@@ -1,0 +1,7 @@
+let
+    var x : Integer;
+    func getXMasUno(x : Integer) : Integer ~ x + 1
+in begin
+    x:= 10;
+    putint(getXMasUno(x));
+end
