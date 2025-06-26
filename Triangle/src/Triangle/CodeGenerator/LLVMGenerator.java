@@ -418,7 +418,42 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int extraSize = 0;
+        String name = ast.I.spelling;
+        
+        if(ast.E instanceof CharacterExpression){
+            char value = ((CharacterExpression) ast.E).CL.spelling.charAt(1);
+            int ascii = (int) value;
+            
+            String varName = newTemp("const_char");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + ascii + ", ptr " + varName + "\n");
+            
+            locals.put(name, varName);
+            extraSize = Machine.characterSize;
+            
+        } else if (ast.E instanceof IntegerExpression){
+            int value = Integer.parseInt(((IntegerExpression) ast.E).IL.spelling);
+            
+            String varName = newTemp("const_int");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + value + ", ptr " + varName + "\n");
+
+            locals.put(name, varName);
+            extraSize = Machine.integerSize;
+        } else {
+            //No estoy seguro si esto esta bien, por el momento lo voy a interpertas como int pero esta raro
+            String exprResult = (String) ast.E.visit(this, null);
+            
+            String varName = newTemp("const_unknown");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + exprResult + ", ptr " + varName + "\n");
+            
+            locals.put(name, varName);
+            extraSize = Machine.integerSize;
+        }
+        writeTableDetails(ast);
+        return extraSize;
     }
 
     @Override

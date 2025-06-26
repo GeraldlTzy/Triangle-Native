@@ -30,7 +30,7 @@
 
 ### DECLARATION
 - [ ] visitBinaryOperatorDeclaration
-- [ ] visitConstDeclaration
+- [x] visitConstDeclaration
 - [ ] visitFuncDeclaration
 - [ ] visitProcDeclaration
 - [ ] visitSequentialDeclaration
