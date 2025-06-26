@@ -3,10 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/andre/Documents/Compiladores/Proyecto3/Triangle-Native/Triangle/src/Triangle/CodeGenerator/Encoder.java</file>
-            <file>file:/C:/Users/andre/Documents/Compiladores/Proyecto3/Triangle-Native/Triangle/src/Triangle/AbstractSyntaxTrees/BinaryExpression.java</file>
-            <file>file:/C:/Users/andre/Documents/Compiladores/Proyecto3/Triangle-Native/Triangle/src/Triangle/AbstractSyntaxTrees/WhileCommand.java</file>
-            <file>file:/C:/Users/andre/Documents/Compiladores/Proyecto3/Triangle-Native/Triangle/src/Triangle/CodeGenerator/LLVMGenerator.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/Compiler.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/ContextualAnalyzer/Checker.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/TAM/Machine.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/StdEnvironment.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/CodeGenerator/Encoder.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/CodeGenerator/PrimitiveRoutine.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/Triangle/CodeGenerator/LLVMGenerator.java</file>
+            <file>file:/home/samuel/Documents/Github/Triangle-Native/Triangle/src/TAM/Instruction.java</file>
         </group>
     </open-files>
 </project-private>
