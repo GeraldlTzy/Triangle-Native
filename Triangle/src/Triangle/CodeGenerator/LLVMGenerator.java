@@ -603,7 +603,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implementado en original
     }
 
     @Override
@@ -613,30 +613,37 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBoolTypeDenoter(BoolTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+        if (ast.entity == null) {
+            ast.entity = new TypeRepresentation(Machine.booleanSize);
+            writeTableDetails(ast);
+        }
+        return new Integer(Machine.booleanSize);    }
 
     @Override
     public Object visitCharTypeDenoter(CharTypeDenoter ast, Object o) {
         if (ast.entity == null) {
-        ast.entity = new TypeRepresentation(Machine.characterSize);        
-    }
-    return new Integer(Machine.characterSize);
+            ast.entity = new TypeRepresentation(Machine.characterSize);        
+        }
+        return new Integer(Machine.characterSize);
     }
 
     @Override
     public Object visitErrorTypeDenoter(ErrorTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implmenetado en encoder original
     }
 
     @Override
     public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implmenetado en encoder original            
     }
+        
 
     @Override
     public Object visitIntTypeDenoter(IntTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (ast.entity == null) {
+            ast.entity = new TypeRepresentation(Machine.integerSize);
+        }
+        return new Integer(Machine.integerSize);
     }
 
     @Override
