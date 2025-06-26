@@ -79,9 +79,9 @@
 
 ### LITERAL, IDENTIFIER, OPERATOR
 - [x] visitCharacterLiteral
-- [ ] visitIdentifier
+- [x] visitIdentifier
 - [x] visitIntegerLiteral
-- [ ] visitOperator
+- [x] visitOperator
 
 ### VNAME
 - [ ] visitDotVname
