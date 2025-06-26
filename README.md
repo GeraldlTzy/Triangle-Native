@@ -55,15 +55,15 @@
 - [ ] visitSingleFormalParameterSequence
     
 ### AP - ACTUAL PARAMETER
-- [ ] visitConstActualParameter
+- [x] visitConstActualParameter
 - [ ] visitFuncActualParameter
 - [ ] visitProcActualParameter
-- [ ] visitVarActualParameter
+- [x] visitVarActualParameter
 
 ### APS - ACTUAL PARAMETER SEQUENCE
-- [ ] visitEmptyActualParameterSequence
-- [ ] visitMultipleActualParameterSequence
-- [ ] visitSingleActualParameterSequence
+- [x] visitEmptyActualParameterSequence
+- [x] visitMultipleActualParameterSequence
+- [x] visitSingleActualParameterSequence
     
 ### TYPE DENOTER
 - [ ] visitAnyTypeDenoter
@@ -92,5 +92,5 @@
 ### Otras Funciones
 - [x] get()
 - [x] put()
-- [x] getchar()
+- [x] getint()
 - [x] putint()
