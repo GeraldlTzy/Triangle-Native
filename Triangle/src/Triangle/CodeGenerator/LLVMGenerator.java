@@ -92,23 +92,10 @@ public final class LLVMGenerator implements Visitor {
         SimpleVname varName;
         TypeDenoter type = ast.V.type;
         String scope = (String) arg;
-
-        //En el caso de que sea un array // c[0] = 5
-        if (ast.V instanceof SubscriptVname subscriptVname) {
-            varName = (SimpleVname) subscriptVname.V;
-            String ptr = locals.get(scope + "." + varName.I.spelling); // %n
-            String index = (String) subscriptVname.E.visit(this, arg);
-            String arraySize = (String) (varName.type.visit(this, null));
-
-            String tmpReg = newTemp("arrayValue");
-            code.append(String.format("  %s = getelementptr inbounds [%s x i32], ptr %s, i64 0, i64 %s\n", tmpReg, arraySize, ptr, index));
-            String value = (String) ast.E.visit(this, arg);
-            code.append("  store i32 " + value + ", ptr " + tmpReg + ", align 4\n");
-
-        } else {
-
-            varName = (SimpleVname) ast.V;
-            String ptr = locals.get(scope + "." + varName.I.spelling); // %n
+        
+        if (ast.V instanceof SimpleVname){            
+            String ptr = getVariableAddress(ast.V, arg);
+            
             //Si es un Array // c = [1,2,3,4,5]
             if (type instanceof ArrayTypeDenoter) {
 
@@ -134,6 +121,16 @@ public final class LLVMGenerator implements Visitor {
                 String value = (String) ast.E.visit(this, arg);
                 code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
             }
+        }
+        //En el caso de que sea un array // c[0] = 5
+        else if (ast.V instanceof SubscriptVname) {            
+            String tmpReg = getVariableAddress(ast.V, arg);                        
+            String value = (String) ast.E.visit(this, arg);
+            code.append("  store i32 " + value + ", ptr " + tmpReg + ", align 4\n");
+        } else if(ast.V instanceof DotVname){
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }else{
+            this.reporter.reportError("variable invalida", "", ast.position);
         }
 
         return null;
@@ -486,12 +483,28 @@ public final class LLVMGenerator implements Visitor {
         globalDeclarations.append("  ret i32 ");
         globalDeclarations.append(retValue);
         globalDeclarations.append(" \n}\n");
-        return null;
+        return 0;
     }
 
     @Override
     public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Object scope = ast.I.spelling;
+
+        globalDeclarations.append("\ndefine dso_local i32 @").append(ast.I.spelling);
+        globalDeclarations.append("(");
+        ast.FPS.visit(this, scope);
+        globalDeclarations.append(") { \n");
+
+        int start = code.length();        
+        ast.C.visit(this, scope);
+
+        //Arreglo feo para pasar el codigo de comando a la declaracion de funcion
+        int end = code.length();
+        globalDeclarations.append(code.substring(start, end));
+        code.delete(start, end);
+
+        globalDeclarations.append("  ret i32 0 \n}\n");                
+        return 0;
     }
 
     @Override
@@ -567,7 +580,13 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String scope = (String) o;
+
+        String varName = scope + "." + ast.I.spelling;
+        locals.put(varName, "%" + varName);
+
+        globalDeclarations.append("ptr %").append(varName);
+        return 0;
     }
 
     ///////////////////////////////////// FPS - FORMAL PARAMETER SEQUENCE
@@ -579,6 +598,7 @@ public final class LLVMGenerator implements Visitor {
     @Override
     public Object visitMultipleFormalParameterSequence(MultipleFormalParameterSequence ast, Object o) {
         ast.FP.visit(this, o);
+        this.globalDeclarations.append(", ");
         ast.FPS.visit(this, o);
         return 0;
     }
@@ -606,9 +626,8 @@ public final class LLVMGenerator implements Visitor {
     }
 
     @Override
-    public Object visitVarActualParameter(VarActualParameter ast, Object o) {
-        String scope = (String) o;
-        String ptr = locals.get(scope + "." + ((SimpleVname) ast.V).I.spelling); //Retorna el puntero de la variable                
+    public Object visitVarActualParameter(VarActualParameter ast, Object o) {        
+        String ptr = this.getVariableAddress(ast.V, o);
         return new FunctionArgument(ptr, 1);
     }
 
@@ -824,5 +843,30 @@ public final class LLVMGenerator implements Visitor {
         elaborateStdPrimRoutine(StdEnvironment.putDecl, "  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef %s) \n");
         elaborateStdPrimRoutine(StdEnvironment.getintDecl, "  %s = call i32 @get() \n  store i32 %s, ptr %s \n");
         elaborateStdPrimRoutine(StdEnvironment.putintDecl, "  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %s) \n");
+    }
+    
+    public String getVariableAddress(Vname ast, Object arg){
+        String address = "";                
+        String scope = (String) arg;
+        
+        if(ast instanceof SimpleVname varName){            
+            String ptr = locals.get(scope + "." + varName.I.spelling); // %n
+            address = ptr;             
+        } else if (ast instanceof SubscriptVname subscriptVname) {
+            SimpleVname varName = (SimpleVname) subscriptVname.V;
+            String ptr = locals.get(scope + "." + varName.I.spelling); // %n
+            String index = (String) subscriptVname.E.visit(this, arg);
+            String arraySize = (String) (varName.type.visit(this, null));
+
+            String tmpReg = newTemp("arrayValue");
+            code.append(String.format("  %s = getelementptr inbounds [%s x i32], ptr %s, i64 0, i64 %s\n", tmpReg, arraySize, ptr, index));
+            address = tmpReg;
+        }else if (ast instanceof DotVname){
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        } else{
+            this.reporter.reportError("variable invalida", "", ast.position);
+        }        
+
+        return address;
     }
 }

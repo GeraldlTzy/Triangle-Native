@@ -18,7 +18,7 @@
 ### EXPRESION
 - [x] visitArrayExpression
 - [x] visitBinaryExpression
-- [ ] visitCallExpression
+- [x] visitCallExpression
 - [x] visitCharacterExpression
 - [x] visitEmptyExpression
 - [x] visitIfExpression
@@ -31,8 +31,8 @@
 ### DECLARATION
 - [x] visitBinaryOperatorDeclaration
 - [x] visitConstDeclaration
-- [ ] visitFuncDeclaration
-- [ ] visitProcDeclaration
+- [x] visitFuncDeclaration
+- [x] visitProcDeclaration
 - [x] visitSequentialDeclaration
 - [x] visitTypeDeclaration
 - [x] visitUnaryOperatorDeclaration
@@ -44,20 +44,20 @@
 - [ ] visitSingleRecordAggregate
     
 ### FP - FORMAL PARAMETER
-- [ ] visitConstFormalParameter
-- [ ] visitFuncFormalParameter
-- [ ] visitProcFormalParameter
-- [ ] visitVarFormalParameter
+- [x] visitConstFormalParameter
+- [x] visitFuncFormalParameter
+- [x] visitProcFormalParameter
+- [x] visitVarFormalParameter
 
 ### FPS - FORMAL PARAMETER SEQUENCE
-- [ ] visitEmptyFormalParameterSequence
-- [ ] visitMultipleFormalParameterSequence
-- [ ] visitSingleFormalParameterSequence
+- [x] visitEmptyFormalParameterSequence
+- [x] visitMultipleFormalParameterSequence
+- [x] visitSingleFormalParameterSequence
     
 ### AP - ACTUAL PARAMETER
 - [x] visitConstActualParameter
-- [ ] visitFuncActualParameter
-- [ ] visitProcActualParameter
+- [x] visitFuncActualParameter
+- [x] visitProcActualParameter
 - [x] visitVarActualParameter
 
 ### APS - ACTUAL PARAMETER SEQUENCE

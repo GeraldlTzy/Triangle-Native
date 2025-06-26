@@ -1,0 +1,8 @@
+let
+    var x : Integer;
+    proc suma(var x: Integer, n: Integer) ~ x := x+n 
+in begin
+    x := 10;
+    suma(var x, 5);
+    putint(x);
+end
