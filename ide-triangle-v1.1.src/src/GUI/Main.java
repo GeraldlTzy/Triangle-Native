@@ -572,7 +572,7 @@ public class Main extends javax.swing.JFrame {
             p.waitFor();
 
         } catch (Exception ex) {
-            llvmStream.println("Error ejecutando el código LLVM: " + ex.getMessage());
+            llvmStream.println("Error ejecutando el codigo LLVM: " + ex.getMessage());
             ex.printStackTrace();
         } finally {
             runMenuItem.setEnabled(true);
