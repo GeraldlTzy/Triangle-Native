@@ -91,7 +91,7 @@ public final class LLVMGenerator implements Visitor {
             varName = (SimpleVname) subscriptVname.V;
             String ptr = locals.get(varName.I.spelling); // %n
             String index = (String) subscriptVname.E.visit(this, arg);
-            String arraySize = (String)(varName.type.visit(this, null));
+            String arraySize = String.valueOf(varName.type.visit(this, null));
             
             String tmpReg = newTemp("arrayValue");
             code.append(String.format("  %s = getelementptr inbounds [%s x i32], ptr %s, i64 0, i64 %s\n",tmpReg, arraySize, ptr, index));
@@ -401,14 +401,27 @@ public final class LLVMGenerator implements Visitor {
         String varName = ast.I.spelling;
         String regName = "%" + varName;
         locals.put(varName, regName); 
+        int extraSize = (Integer) ast.T.visit(this, null);
+        
         if(ast.T instanceof ArrayTypeDenoter){
-            String arraySize = (String) ast.T.visit(this, arg);
-            code.append("  " + regName + " = alloca [" + arraySize + " x i32], align 16\n");
-        } else{
+            code.append("  " + regName + " = alloca [" + String.valueOf(extraSize) + " x i32], align 16\n");
+        } else if (ast.T instanceof RecordTypeDenoter){
+            StringBuilder recordType = new StringBuilder("{ ");
+            for (int i = 0; i < extraSize; i++) {
+                recordType.append("i32");
+                if (i < extraSize - 1) {
+                    recordType.append(", ");
+                }
+            }
+            code.append("  " + regName + " = alloca " + recordType.toString() + " }, align 4\n");
+        } else {
             code.append("  " + regName + " = alloca i32, align 4\n");
         }
+        //Frame frame = (Frame) o;
         
-        return null;
+        //emit(Machine.PUSHop, 0, 0, extraSize);
+        //ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+        return extraSize;
     }
     
     @Override
@@ -572,7 +585,7 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o) {
-        return ast.IL.spelling;
+        return Integer.parseInt(ast.IL.spelling);
     }
 
     @Override
@@ -605,17 +618,43 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int typeSize;
+        if (ast.entity == null) {
+          typeSize = ((Integer) ast.FT.visit(this, 0));
+          ast.entity = new TypeRepresentation(typeSize);
+        } else
+          typeSize = ast.entity.size;
+        return typeSize;
     }
 
     @Override
     public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int offset = (Integer) o;
+        int fieldSize;
+
+        if (ast.entity == null) {
+          fieldSize = ((Integer) ast.T.visit(this, null));
+          ast.entity = new Field (fieldSize, offset);
+        } else
+          fieldSize = ast.entity.size;
+
+        Integer offset1 = offset + fieldSize;
+        int recSize = ((Integer) ast.FT.visit(this, offset1));
+        return 1 + recSize;
     }
 
     @Override
     public Object visitSingleFieldTypeDenoter(SingleFieldTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int offset = (Integer) o;
+        int fieldSize;
+
+        if (ast.entity == null) {
+          fieldSize = ((Integer) ast.T.visit(this, null));
+          ast.entity = new Field (fieldSize, offset);
+        } else
+          fieldSize = ast.entity.size;
+
+        return 1;
     }
 
     /////////////////////////////////////////////// LITERAL
@@ -683,7 +722,7 @@ public final class LLVMGenerator implements Visitor {
         SimpleVname vName = (SimpleVname) ast.V;
         String varName = vName.I.spelling;
         String ptr = locals.get(varName);
-        String arraySize = (String) vName.type.visit(this, null);
+        String arraySize = String.valueOf(vName.type.visit(this, null));
         
         String tmpReg = newTemp("arrayPtr");
         String index = (String) ast.E.visit(this, null);

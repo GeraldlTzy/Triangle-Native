@@ -1,0 +1,10 @@
+let
+    var fecha = record
+        d : Integer;
+        m : Integer
+    end;
+in
+begin
+    fecha.d := 2;
+    fecha.m := 5;
+end
