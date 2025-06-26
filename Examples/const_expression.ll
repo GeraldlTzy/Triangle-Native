@@ -30,13 +30,13 @@ Get.loop3:
 
 define i32 @main() {
 entry:
-  %c = alloca i32, align 4
-  %i = alloca i32, align 4
-  store i32 58, ptr %c, align 4
-  store i32 3, ptr %i, align 4
-  %varName0 = load i32, ptr %c, align 4
-  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef %varName0) 
-  %varName1 = load i32, ptr %i, align 4
-  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %varName1) 
+  %const_char0 = alloca i32
+  store i32 58, ptr %const_char0
+  %const_int1 = alloca i32
+  store i32 3, ptr %const_int1
+  %varName2 = load i32, ptr %const_char0, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.char, i32 noundef %varName2) 
+  %varName3 = load i32, ptr %const_int1, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %varName3) 
   ret i32 0
 }
