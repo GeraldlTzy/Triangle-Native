@@ -4,6 +4,7 @@
  */
 
 package GUI;
+import Core.Console.OutputRedirector;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -37,6 +38,7 @@ public class FileFrame extends javax.swing.JInternalFrame {
     public FileFrame(KeyAdapter delegateKey, MouseListener delegateMouse, InternalFrameListener delegateFrame, ActionListener delegateEnter) {
         initComponents();
         addllvmPane();
+        addConsoleLLVM();
         previouslySaved = false;        
         sourcePane.addKeyListener(delegateKey);
         addInternalFrameListener(delegateFrame);
@@ -424,7 +426,58 @@ public class FileFrame extends javax.swing.JInternalFrame {
     public void setLLVMCode(String code) {
         llvmPane.setText(code);
     }
+    private javax.swing.JEditorPane consoleLLVMPane = new javax.swing.JEditorPane();
+    private javax.swing.JPanel consoleLLVMPanel = new javax.swing.JPanel();
+    private javax.swing.JScrollPane consoleLLVMScroll = new javax.swing.JScrollPane();
+    private javax.swing.JPanel inputLLVMPanel;
+    private javax.swing.JTextField inputLLVMField;
+    private void addConsoleLLVM() {
+        inputLLVMPanel = new javax.swing.JPanel();
+        inputLLVMField = new javax.swing.JTextField();
 
+        consoleLLVMPanel.setName("consoleLLVMPanel");
+        consoleLLVMPanel.setLayout(new javax.swing.BoxLayout(consoleLLVMPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        consoleLLVMScroll.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        consoleLLVMScroll.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        consoleLLVMPane.setEditable(false);
+        consoleLLVMPane.setFont(new java.awt.Font("Courier New", 0, 12));
+        consoleLLVMScroll.setViewportView(consoleLLVMPane);
+
+        consoleLLVMPanel.add(consoleLLVMScroll);
+
+        inputLLVMPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        inputLLVMPanel.setLayout(new javax.swing.BoxLayout(inputLLVMPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        inputLLVMField.setEnabled(false);
+        inputLLVMField.setMaximumSize(new java.awt.Dimension(2147483647, 20));
+        inputLLVMField.setMinimumSize(new java.awt.Dimension(11, 20));
+        inputLLVMField.setPreferredSize(new java.awt.Dimension(23, 20));
+        inputLLVMPanel.add(inputLLVMField);
+
+        enterButton.setText("Enter Input");
+        enterButton.setEnabled(false);
+        inputLLVMPanel.add(enterButton);
+        
+        consoleLLVMPanel.add(inputLLVMPanel);
+        
+        tabbedPane.addTab("Console LLVM", consoleLLVMPanel);
+        
+        llvmOutput.setDelegate(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                while (llvmOutput.peekQueue()) {
+                    consoleLLVMPane.setText(consoleLLVMPane.getText() + llvmOutput.readQueue());
+                }
+            }
+        });
+    }
+    
+    public static OutputRedirector getLLVMOutput(){
+        return llvmOutput;
+    }
+    private static OutputRedirector llvmOutput = new OutputRedirector();
     private JTree astTree;
     private JTable idTable;
     // </editor-fold>
