@@ -370,7 +370,32 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitUnaryExpression(UnaryExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        code.append("; Comienza UNARY_EXPRESSION\n");
+        String expr = (String) ast.E.visit(this, o);
+        String op = ast.O.spelling;
+        String result;
+        
+        switch(op){
+            case "-" -> {
+                result = newTemp("neg");
+                code.append("  " + result + " = sub i32 0, " + expr + "\n");
+            }
+            case "!" -> {
+                //No see si esta implementado estro en trianguloo pero x si acaso lo pongo
+                result = newTemp("not");
+                code.append("  " + result + " = xor i1 " + expr + ", true\n");
+            }
+            case "+" -> result = expr;
+            default -> {
+                result = "0";
+                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA no se algo paso en unary expression" + op);
+            }
+        }
+        code.append("; Termina UNARY_EXPRESSION\n");
+
+        return result;
+        
+        
     }
 
     @Override
@@ -397,12 +422,47 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //Tampoco esta implementad oen el enconder original, entonces estoym haciendo lo mismo que ponia ahi
     }
 
     @Override
     public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int extraSize = 0;
+        String name = ast.I.spelling;
+        
+        if(ast.E instanceof CharacterExpression){
+            char value = ((CharacterExpression) ast.E).CL.spelling.charAt(1);
+            int ascii = (int) value;
+            
+            String varName = newTemp("const_char");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + ascii + ", ptr " + varName + "\n");
+            
+            locals.put(name, varName);
+            extraSize = Machine.characterSize;
+            
+        } else if (ast.E instanceof IntegerExpression){
+            int value = Integer.parseInt(((IntegerExpression) ast.E).IL.spelling);
+            
+            String varName = newTemp("const_int");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + value + ", ptr " + varName + "\n");
+
+            locals.put(name, varName);
+            extraSize = Machine.integerSize;
+        } else {
+            //No estoy seguro si esto esta bien, por el momento lo voy a interpertas como int pero esta raro
+            String exprResult = (String) ast.E.visit(this, null);
+            
+            String varName = newTemp("const_unknown");
+            code.append("  " + varName + " = alloca i32\n");
+            code.append("  store i32 " + exprResult + ", ptr " + varName + "\n");
+            
+            locals.put(name, varName);
+            extraSize = Machine.integerSize;
+        }
+        writeTableDetails(ast);
+        return extraSize;
     }
 
     @Override
@@ -442,12 +502,13 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+        // Solo se asegura de que el tipo se cree, no hace nada mas
+        ast.T.visit(this, null);
+        return new Integer(0);    }
 
     @Override
     public Object visitUnaryOperatorDeclaration(UnaryOperatorDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //Igual que con el binary, no esta implementado enb el encoder original
     }
 
     ////////////////////////////////// AGGREGATE
@@ -574,7 +635,7 @@ public final class LLVMGenerator implements Visitor {
     ////////////////////////////////////// TYPE DENOTER
     @Override
     public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implementado en original
     }
 
     @Override
@@ -584,30 +645,37 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitBoolTypeDenoter(BoolTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+        if (ast.entity == null) {
+            ast.entity = new TypeRepresentation(Machine.booleanSize);
+            writeTableDetails(ast);
+        }
+        return new Integer(Machine.booleanSize);    }
 
     @Override
     public Object visitCharTypeDenoter(CharTypeDenoter ast, Object o) {
         if (ast.entity == null) {
-            ast.entity = new TypeRepresentation(Machine.characterSize);
+            ast.entity = new TypeRepresentation(Machine.characterSize);        
         }
         return new Integer(Machine.characterSize);
     }
 
     @Override
     public Object visitErrorTypeDenoter(ErrorTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implmenetado en encoder original
     }
 
     @Override
     public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //No implmenetado en encoder original            
     }
+        
 
     @Override
     public Object visitIntTypeDenoter(IntTypeDenoter ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (ast.entity == null) {
+            ast.entity = new TypeRepresentation(Machine.integerSize);
+        }
+        return new Integer(Machine.integerSize);
     }
 
     @Override

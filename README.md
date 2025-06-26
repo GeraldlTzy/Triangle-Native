@@ -25,17 +25,17 @@
 - [x] visitIntegerExpression
 - [x] visitLetExpression
 - [ ] visitRecordExpression
-- [ ] visitUnaryExpression
+- [x] visitUnaryExpression
 - [x] visitVnameExpression
 
 ### DECLARATION
-- [ ] visitBinaryOperatorDeclaration
-- [ ] visitConstDeclaration
+- [x] visitBinaryOperatorDeclaration
+- [x] visitConstDeclaration
 - [ ] visitFuncDeclaration
 - [ ] visitProcDeclaration
-- [ ] visitSequentialDeclaration
-- [ ] visitTypeDeclaration
-- [ ] visitUnaryOperatorDeclaration
+- [x] visitSequentialDeclaration
+- [x] visitTypeDeclaration
+- [x] visitUnaryOperatorDeclaration
 
 ### AGGREGATE
 - [x] visitMultipleArrayAggregate
@@ -66,22 +66,22 @@
 - [x] visitSingleActualParameterSequence
     
 ### TYPE DENOTER
-- [ ] visitAnyTypeDenoter
+- [x] visitAnyTypeDenoter
 - [x] visitArrayTypeDenoter
-- [ ] visitBoolTypeDenoter
-- [ ] visitCharTypeDenoter
-- [ ] visitErrorTypeDenoter
-- [ ] visitSimpleTypeDenoter
-- [ ] visitIntTypeDenoter
+- [x] visitBoolTypeDenoter
+- [x] visitCharTypeDenoter
+- [x] visitErrorTypeDenoter
+- [x] visitSimpleTypeDenoter
+- [x] visitIntTypeDenoter
 - [ ] visitRecordTypeDenoter
 - [ ] visitMultipleFieldTypeDenoter
 - [ ] visitSingleFieldTypeDenoter
 
 ### LITERAL, IDENTIFIER, OPERATOR
 - [x] visitCharacterLiteral
-- [ ] visitIdentifier
+- [x] visitIdentifier
 - [x] visitIntegerLiteral
-- [ ] visitOperator
+- [x] visitOperator
 
 ### VNAME
 - [ ] visitDotVname
