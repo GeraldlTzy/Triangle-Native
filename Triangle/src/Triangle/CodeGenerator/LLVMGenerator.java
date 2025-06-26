@@ -3,6 +3,7 @@ package Triangle.CodeGenerator;
 import TAM.Machine;
 import Triangle.AbstractSyntaxTrees.*;
 import Triangle.AbstractSyntaxTrees.Visitor;
+import static Triangle.CodeGenerator.Encoder.writeTableDetails;
 import Triangle.CodeGenerator.PrimitiveRoutine;
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
