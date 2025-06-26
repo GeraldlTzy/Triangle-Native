@@ -58,10 +58,10 @@
 - [x] visitConstActualParameter
 - [ ] visitFuncActualParameter
 - [ ] visitProcActualParameter
-- [ ] visitVarActualParameter
+- [x] visitVarActualParameter
 
 ### APS - ACTUAL PARAMETER SEQUENCE
-- [ ] visitEmptyActualParameterSequence
+- [x] visitEmptyActualParameterSequence
 - [x] visitMultipleActualParameterSequence
 - [x] visitSingleActualParameterSequence
     
@@ -92,5 +92,5 @@
 ### Otras Funciones
 - [x] get()
 - [x] put()
-- [x] getchar()
+- [x] getint()
 - [x] putint()

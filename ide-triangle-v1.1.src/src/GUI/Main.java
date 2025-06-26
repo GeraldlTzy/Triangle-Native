@@ -43,6 +43,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.swing.tree.DefaultMutableTreeNode;
 import Triangle.CodeGenerator.LLVMGenerator;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 /**
  * The Main class. Contains the main form.
  *
@@ -62,6 +64,7 @@ public class Main extends javax.swing.JFrame {
         
         initComponents();
         addButtonCompileLLVM();
+        addButtonRunLLVM();
         setSize(640, 480);
         setVisible(true);
         directory = new File(".");
@@ -97,6 +100,7 @@ public class Main extends javax.swing.JFrame {
             buttonCompile.setEnabled(false);
             buttonCompileLLVM.setEnabled(false);
             buttonRun.setEnabled(false);
+            buttonRunLLVM.setEnabled(false);
             cutMenuItem.setEnabled(false);
             copyMenuItem.setEnabled(false);
             pasteMenuItem.setEnabled(false);            
@@ -533,7 +537,50 @@ public class Main extends javax.swing.JFrame {
         buttonCompile.setEnabled(false);
         interpreter.Run(desktopPane.getSelectedFrame().getTitle().replace(".tri", ".tam"));
     }//GEN-LAST:event_runMenuItemActionPerformed
+    private OutputRedirector llvmOutput = FileFrame.getLLVMOutput();
+    private void runLLVMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+        FileFrame currentFrame = (FileFrame) desktopPane.getSelectedFrame();
+        currentFrame.clearConsole();
+        currentFrame.selectConsole();
+        PrintStream llvmStream = new PrintStream(llvmOutput);
+        llvmStream.print("");
+        runMenuItem.setEnabled(false);
+        buttonRunLLVM.setEnabled(false);
+        compileMenuItem.setEnabled(false);
+        buttonCompile.setEnabled(false);
+        try {
+            String fileBase = currentFrame.getTitle().replace(".tri", "");
+            String llFile = fileBase + ".ll";
+            String exeFile = fileBase + ".exe";
+            
+            // Crear ejecutable
+            ProcessBuilder pb = new ProcessBuilder("clang", llFile, "-o", exeFile);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            p.waitFor();
 
+            // Ejecutar programa
+            pb = new ProcessBuilder(exeFile);
+            pb.redirectErrorStream(true);
+            p = pb.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                llvmStream.println(line);
+            }
+            p.waitFor();
+
+        } catch (Exception ex) {
+            llvmStream.println("Error ejecutando el código LLVM: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            runMenuItem.setEnabled(true);
+            buttonRunLLVM.setEnabled(true);
+            compileMenuItem.setEnabled(true);
+            buttonCompile.setEnabled(true);
+        }
+    }    
     /** 
      * Handles the "Close" program option
      */
@@ -655,9 +702,11 @@ public class Main extends javax.swing.JFrame {
                 String llvmCode = compiler.getLLVMCode();
                 // 2. Mostrar codigo LLVM en panel
                 ((FileFrame)desktopPane.getSelectedFrame()).setLLVMCode(llvmCode);
-                // 3. Guardar archivo .ll en disco
+                // 3. Guardar archivo .ll
                 String path = desktopPane.getSelectedFrame().getTitle().replace(".tri", ".ll");
                 Files.writeString(Paths.get(path), llvmCode, StandardCharsets.UTF_8);
+                runMenuItem.setEnabled(true);
+                buttonRunLLVM.setEnabled(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error generando codigo LLVM:\n" + e.getMessage());
@@ -889,6 +938,7 @@ public class Main extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     // </editor-fold>
     private javax.swing.JButton buttonCompileLLVM = new javax.swing.JButton();
+    private javax.swing.JButton buttonRunLLVM = new javax.swing.JButton();
     private void addButtonCompileLLVM() {
         buttonCompileLLVM = new javax.swing.JButton();
         buttonCompileLLVM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/Icons/iconTriangleCompile.gif")));
@@ -904,6 +954,22 @@ public class Main extends javax.swing.JFrame {
             }
         });
         triangleToolBar.add(buttonCompileLLVM);
+    }
+    private void addButtonRunLLVM() {
+        buttonRunLLVM.setIcon(new javax.swing.ImageIcon(getClass().getResource("/GUI/Icons/iconTriangleRun.gif")));
+        buttonRunLLVM.setToolTipText("Run LLVM...");
+        buttonRunLLVM.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        buttonRunLLVM.setBorderPainted(false);
+        buttonRunLLVM.setEnabled(false);
+        buttonRunLLVM.setFocusPainted(false);
+        buttonRunLLVM.setFocusable(false);
+        buttonRunLLVM.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runLLVMMenuItemActionPerformed(evt);
+            }
+        });
+
+        triangleToolBar.add(buttonRunLLVM);
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Non-GUI Variables ">
