@@ -90,9 +90,9 @@ public final class Machine {
 // DATA REPRESENTATION
 
   public final static int
-    booleanSize = 32,
-    characterSize = 32,
-    integerSize = 32,
+    booleanSize = 1,
+    characterSize = 1,
+    integerSize = 1,
     addressSize = 1,
     closureSize = 2 * addressSize,
 

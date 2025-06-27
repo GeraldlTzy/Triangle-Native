@@ -18,7 +18,7 @@
 ### EXPRESION
 - [x] visitArrayExpression
 - [x] visitBinaryExpression
-- [ ] visitCallExpression
+- [x] visitCallExpression
 - [x] visitCharacterExpression
 - [x] visitEmptyExpression
 - [x] visitIfExpression
@@ -29,13 +29,13 @@
 - [x] visitVnameExpression
 
 ### DECLARATION
-- [ ] visitBinaryOperatorDeclaration
-- [ ] visitConstDeclaration
-- [ ] visitFuncDeclaration
-- [ ] visitProcDeclaration
-- [ ] visitSequentialDeclaration
-- [ ] visitTypeDeclaration
-- [ ] visitUnaryOperatorDeclaration
+- [x] visitBinaryOperatorDeclaration
+- [x] visitConstDeclaration
+- [x] visitFuncDeclaration
+- [x] visitProcDeclaration
+- [x] visitSequentialDeclaration
+- [x] visitTypeDeclaration
+- [x] visitUnaryOperatorDeclaration
 
 ### AGGREGATE
 - [x] visitMultipleArrayAggregate
@@ -44,20 +44,20 @@
 - [ ] visitSingleRecordAggregate
     
 ### FP - FORMAL PARAMETER
-- [ ] visitConstFormalParameter
-- [ ] visitFuncFormalParameter
-- [ ] visitProcFormalParameter
-- [ ] visitVarFormalParameter
+- [x] visitConstFormalParameter
+- [x] visitFuncFormalParameter
+- [x] visitProcFormalParameter
+- [x] visitVarFormalParameter
 
 ### FPS - FORMAL PARAMETER SEQUENCE
-- [ ] visitEmptyFormalParameterSequence
-- [ ] visitMultipleFormalParameterSequence
-- [ ] visitSingleFormalParameterSequence
+- [x] visitEmptyFormalParameterSequence
+- [x] visitMultipleFormalParameterSequence
+- [x] visitSingleFormalParameterSequence
     
 ### AP - ACTUAL PARAMETER
 - [x] visitConstActualParameter
-- [ ] visitFuncActualParameter
-- [ ] visitProcActualParameter
+- [x] visitFuncActualParameter
+- [x] visitProcActualParameter
 - [x] visitVarActualParameter
 
 ### APS - ACTUAL PARAMETER SEQUENCE
@@ -66,13 +66,13 @@
 - [x] visitSingleActualParameterSequence
     
 ### TYPE DENOTER
-- [ ] visitAnyTypeDenoter
+- [x] visitAnyTypeDenoter
 - [x] visitArrayTypeDenoter
-- [ ] visitBoolTypeDenoter
-- [ ] visitCharTypeDenoter
-- [ ] visitErrorTypeDenoter
-- [ ] visitSimpleTypeDenoter
-- [ ] visitIntTypeDenoter
+- [x] visitBoolTypeDenoter
+- [x] visitCharTypeDenoter
+- [x] visitErrorTypeDenoter
+- [x] visitSimpleTypeDenoter
+- [x] visitIntTypeDenoter
 - [ ] visitRecordTypeDenoter
 - [ ] visitMultipleFieldTypeDenoter
 - [ ] visitSingleFieldTypeDenoter

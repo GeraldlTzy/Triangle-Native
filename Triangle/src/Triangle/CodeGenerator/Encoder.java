@@ -431,7 +431,7 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitMultipleFormalParameterSequence(
-      MultipleFormalParameterSequence ast, Object o) {
+       MultipleFormalParameterSequence ast, Object o) {
     Frame frame = (Frame) o;
     int argsSize1 = ((Integer) ast.FPS.visit(this, frame)).intValue();
     Frame frame1 = new Frame(frame, argsSize1);

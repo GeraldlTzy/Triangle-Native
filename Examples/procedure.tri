@@ -1,0 +1,10 @@
+let
+    var x : Integer;
+    var c: array 5 of Integer;
+    proc suma(var x: Integer, n: Integer) ~ x := x+n
+in begin
+    c := [4,4,5,6,7];
+    x := 10;
+    suma(var c[4], x);
+    putint(c[4]);
+end
