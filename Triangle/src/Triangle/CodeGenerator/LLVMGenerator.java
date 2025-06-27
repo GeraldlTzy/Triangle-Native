@@ -361,7 +361,32 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitUnaryExpression(UnaryExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        code.append("; Comienza UNARY_EXPRESSION\n");
+        String expr = (String) ast.E.visit(this, o);
+        String op = ast.O.spelling;
+        String result;
+        
+        switch(op){
+            case "-" -> {
+                result = newTemp("neg");
+                code.append("  " + result + " = sub i32 0, " + expr + "\n");
+            }
+            case "!" -> {
+                //No see si esta implementado estro en trianguloo pero x si acaso lo pongo
+                result = newTemp("not");
+                code.append("  " + result + " = xor i1 " + expr + ", true\n");
+            }
+            case "+" -> result = expr;
+            default -> {
+                result = "0";
+                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA no se algo paso en unary expression" + op);
+            }
+        }
+        code.append("; Termina UNARY_EXPRESSION\n");
+
+        return result;
+        
+        
     }
 
     @Override
