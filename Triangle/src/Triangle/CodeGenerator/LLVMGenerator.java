@@ -413,7 +413,7 @@ public final class LLVMGenerator implements Visitor {
     
     @Override
     public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //Tampoco esta implementad oen el enconder original, entonces estoym haciendo lo mismo que ponia ahi
     }
 
     @Override
@@ -475,12 +475,13 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+        // Solo se asegura de que el tipo se cree, no hace nada mas
+        ast.T.visit(this, null);
+        return new Integer(0);    }
 
     @Override
     public Object visitUnaryOperatorDeclaration(UnaryOperatorDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return new Integer(0); //Igual que con el binary, no esta implementado enb el encoder original
     }
 
     ////////////////////////////////// AGGREGATE

@@ -29,13 +29,13 @@
 - [x] visitVnameExpression
 
 ### DECLARATION
-- [ ] visitBinaryOperatorDeclaration
+- [x] visitBinaryOperatorDeclaration
 - [x] visitConstDeclaration
 - [ ] visitFuncDeclaration
 - [ ] visitProcDeclaration
-- [ ] visitSequentialDeclaration
-- [ ] visitTypeDeclaration
-- [ ] visitUnaryOperatorDeclaration
+- [x] visitSequentialDeclaration
+- [x] visitTypeDeclaration
+- [x] visitUnaryOperatorDeclaration
 
 ### AGGREGATE
 - [x] visitMultipleArrayAggregate
