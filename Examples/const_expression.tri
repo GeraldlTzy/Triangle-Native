@@ -1,0 +1,7 @@
+let 
+	const c ~ ':';
+	const i ~ 3
+in begin
+	put(c);
+	putint(i)
+end
