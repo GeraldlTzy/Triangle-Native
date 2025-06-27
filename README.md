@@ -73,9 +73,9 @@
 - [x] visitErrorTypeDenoter
 - [x] visitSimpleTypeDenoter
 - [x] visitIntTypeDenoter
-- [ ] visitRecordTypeDenoter
-- [ ] visitMultipleFieldTypeDenoter
-- [ ] visitSingleFieldTypeDenoter
+- [x] visitRecordTypeDenoter
+- [x] visitMultipleFieldTypeDenoter
+- [x] visitSingleFieldTypeDenoter
 
 ### LITERAL, IDENTIFIER, OPERATOR
 - [x] visitCharacterLiteral
@@ -84,7 +84,7 @@
 - [x] visitOperator
 
 ### VNAME
-- [ ] visitDotVname
+- [x] visitDotVname
 - [x] visitSimpleVname
 - [x] visitSubscriptVname
 
