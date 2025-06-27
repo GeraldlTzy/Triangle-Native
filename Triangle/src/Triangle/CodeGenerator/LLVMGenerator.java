@@ -15,6 +15,7 @@ import java.util.Map;
 public final class LLVMGenerator implements Visitor {
 
     private StringBuilder code;
+    private StringBuilder finalCode;
     private StringBuilder globalDeclarations;
     private Map<String, String> locals;
     private List<FunctionArgument> functionArgs;
@@ -50,6 +51,8 @@ public final class LLVMGenerator implements Visitor {
         this.reporter = reporter;
         this.code = new StringBuilder();
         this.globalDeclarations = new StringBuilder();
+        this.finalCode = new StringBuilder();
+        
         locals = new HashMap<>();
         functionArgs = new ArrayList<>();
         tempCount = 0;
@@ -68,9 +71,11 @@ public final class LLVMGenerator implements Visitor {
         code.append("  ret i32 0\n");
         code.append("}\n");
 
-        code.append(this.globalDeclarations.toString());
+        //code.append();
 
-        return code.toString();
+        finalCode.append(this.globalDeclarations.toString());
+        finalCode.append(this.code.toString());
+        return finalCode.toString();
     }
 
     @Override
@@ -89,13 +94,11 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitAssignCommand(AssignCommand ast, Object arg) {
-        SimpleVname varName;
         TypeDenoter type = ast.V.type;
         String scope = (String) arg;
+        String ptr = getVariableAddress(ast.V, arg);
         
-        if (ast.V instanceof SimpleVname){            
-            String ptr = getVariableAddress(ast.V, arg);
-            
+        if (ast.V instanceof SimpleVname vName){                  
             //Si es un Array // c = [1,2,3,4,5]
             if (type instanceof ArrayTypeDenoter) {
 
@@ -117,19 +120,20 @@ public final class LLVMGenerator implements Visitor {
                 array.visit(this, args);
                  */
 
-            } else {
+            } else if (type instanceof RecordTypeDenoter) {
+                String structReg = locals.get(scope + "." + vName.I.spelling + "S"); // %n
+                Object[] parameters = { ptr, structReg, 0 };
+                ast.E.visit(this, parameters);
+            } else{
                 String value = (String) ast.E.visit(this, arg);
                 code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
             }
         }
         //En el caso de que sea un array // c[0] = 5
-        else if (ast.V instanceof SubscriptVname) {            
-            String tmpReg = getVariableAddress(ast.V, arg);                        
+        else if (ast.V instanceof SubscriptVname || ast.V instanceof DotVname) {                         
             String value = (String) ast.E.visit(this, arg);
-            code.append("  store i32 " + value + ", ptr " + tmpReg + ", align 4\n");
-        } else if(ast.V instanceof DotVname){
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-        }else{
+            code.append("  store i32 " + value + ", ptr " + ptr + ", align 4\n");
+        } else{
             this.reporter.reportError("variable invalida", "", ast.position);
         }
 
@@ -363,7 +367,8 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitRecordExpression(RecordExpression ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ast.RA.visit(this, o);
+        return  null;
     }
 
     @Override
@@ -420,7 +425,12 @@ public final class LLVMGenerator implements Visitor {
                     recordType.append(", ");
                 }
             }
-            code.append("  " + regName + " = alloca " + recordType.toString() + " }, align 4\n");
+            String structName = varName + "S";
+            String recordStruct = "%" + ast.I.spelling + "S";
+            locals.put(structName, recordStruct); 
+            
+            globalDeclarations.append(recordStruct + " = type " + recordType.toString() + " }\n");
+            code.append("  " + regName + " = alloca " + recordStruct + ", align 4\n");
         } else {
             code.append("  " + regName + " = alloca i32, align 4\n");
         }
@@ -561,12 +571,36 @@ public final class LLVMGenerator implements Visitor {
 
     @Override
     public Object visitMultipleRecordAggregate(MultipleRecordAggregate ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Object[] parameters = (Object[]) o;
+        String recordName = (String) parameters[0];
+        String recordStruct = (String) parameters[1];
+        int offset = (Integer) parameters[2];
+       
+        String tmpReg = newTemp("recordIndex");
+        String value = (String) ast.E.visit(this,null);
+                    
+        code.append(String.format("  %s = getelementptr inbounds nuw %s, ptr %s, i32 0, i32 %d\n", tmpReg, recordStruct, recordName, offset));
+        code.append(String.format("  store i32 %s, ptr %s, align 4\n", value, tmpReg));
+        
+        parameters[2] = offset + 1;
+        
+        ast.RA.visit(this, o);
+        return null;
     }
 
     @Override
     public Object visitSingleRecordAggregate(SingleRecordAggregate ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Object[] parameters = (Object[]) o;
+        String recordName = (String) parameters[0];
+        String recordStruct = (String) parameters[1];
+        int offset = (Integer) parameters[2];
+       
+        String tmpReg = newTemp("recordIndex");
+        String value = (String) ast.E.visit(this,null);
+                    
+        code.append(String.format("  %s = getelementptr inbounds nuw %s, ptr %s, i32 0, i32 %d\n", tmpReg, recordStruct, recordName, offset));
+        code.append(String.format("  store i32 %s, ptr %s, align 4\n", value, tmpReg));
+        return null;
     }
 
     ///////////////////////////////// FP - FORMAL PARAMETER
@@ -732,9 +766,8 @@ public final class LLVMGenerator implements Visitor {
           ast.entity = new Field (fieldSize, offset);
         } else
           fieldSize = ast.entity.size;
-
-        Integer offset1 = offset + fieldSize;
-        int recSize = ((Integer) ast.FT.visit(this, offset1));
+        
+        int recSize = ((Integer) ast.FT.visit(this, offset + 1));
         return 1 + recSize;
     }
 
@@ -803,7 +836,14 @@ public final class LLVMGenerator implements Visitor {
     //////////////////////////////// VNAME
     @Override
     public Object visitDotVname(DotVname ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String scope = (String) o;
+        //Cargar el valor de un record
+        String ptr = getVariableAddress(ast, scope);
+        
+        String finalReg = newTemp("arrayValue");
+        code.append("  " + finalReg + " = load i32, ptr " + ptr + ", align 4\n");
+
+        return finalReg;
     }
 
     @Override
@@ -834,7 +874,7 @@ public final class LLVMGenerator implements Visitor {
         SimpleVname vName = (SimpleVname) ast.V;
         String varName = vName.I.spelling;
         String ptr = locals.get(scope + "." + varName);
-        String arraySize = (String) vName.type.visit(this, null);
+        String arraySize = String.valueOf(vName.type.visit(this, null));
 
         String tmpReg = newTemp("arrayPtr");
         String index = (String) ast.E.visit(this, null);
@@ -895,13 +935,20 @@ public final class LLVMGenerator implements Visitor {
             SimpleVname varName = (SimpleVname) subscriptVname.V;
             String ptr = locals.get(scope + "." + varName.I.spelling); // %n
             String index = (String) subscriptVname.E.visit(this, arg);
-            String arraySize = (String) (varName.type.visit(this, null));
+            String arraySize = String.valueOf(varName.type.visit(this, null));
 
             String tmpReg = newTemp("arrayValue");
             code.append(String.format("  %s = getelementptr inbounds [%s x i32], ptr %s, i64 0, i64 %s\n", tmpReg, arraySize, ptr, index));
             address = tmpReg;
-        }else if (ast instanceof DotVname){
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }else if (ast instanceof DotVname dotVname){
+            SimpleVname varName = (SimpleVname) dotVname.V;
+            String ptr = locals.get(scope + "." + varName.I.spelling); // %n
+            int offset = ((Field) dotVname.I.decl.entity).fieldOffset;
+            String structReg = locals.get(scope + "." + varName.I.spelling + "S"); // %n
+            
+            String tmpReg = newTemp("recordAttribute");
+            code.append(String.format("  %s = getelementptr inbounds nuw %s, ptr %s, i32 0, i32 %d\n", tmpReg, structReg, ptr, offset));
+            address = tmpReg;
         } else{
             this.reporter.reportError("variable invalida", "", ast.position);
         }        

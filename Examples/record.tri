@@ -1,10 +1,22 @@
 let
-    var fecha = record
-        d : Integer;
-        m : Integer
+    var fecha : record
+	d : Integer, 
+	m : Integer
     end;
+
+    var fecha2 : record
+	d : Integer, 
+	m : Integer
+    end
+
 in
 begin
-    fecha.d := 2;
-    fecha.m := 5;
+    fecha := {d ~ 7, m ~ 4};
+    putint(fecha.m);
+    fecha.m := 6;
+    putint(fecha.m);
+    fecha2.d := fecha.m;
+    putint(fecha2.d);
+    fecha2.d := fecha.d;
+    putint(fecha2.d)
 end
