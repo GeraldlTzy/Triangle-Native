@@ -1,0 +1,14 @@
+let
+    type fecha ~ record
+	d : Integer, 
+	m : Integer
+    end;
+
+    var fecha2 : fecha
+
+in
+begin
+    putint(fecha2.d);
+    fecha2.d := 3;
+    putint(fecha2.d)
+end
