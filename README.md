@@ -24,7 +24,7 @@
 - [x] visitIfExpression
 - [x] visitIntegerExpression
 - [x] visitLetExpression
-- [ ] visitRecordExpression
+- [x] visitRecordExpression
 - [x] visitUnaryExpression
 - [x] visitVnameExpression
 
