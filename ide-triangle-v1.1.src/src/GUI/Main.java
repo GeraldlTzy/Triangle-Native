@@ -529,7 +529,7 @@ public class Main extends javax.swing.JFrame {
      */
     private void runMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runMenuItemActionPerformed
         ((FileFrame)desktopPane.getSelectedFrame()).clearConsole();
-        ((FileFrame)desktopPane.getSelectedFrame()).selectConsole();
+        ((FileFrame)desktopPane.getSelectedFrame()).selectConsole("");
         output.setDelegate(delegateConsole);
         runMenuItem.setEnabled(false);
         buttonRun.setEnabled(false);
@@ -541,7 +541,7 @@ public class Main extends javax.swing.JFrame {
     private void runLLVMMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         FileFrame currentFrame = (FileFrame) desktopPane.getSelectedFrame();
         currentFrame.clearConsole();
-        currentFrame.selectConsole();
+        currentFrame.selectConsole("llvmConsole");
         PrintStream llvmStream = new PrintStream(llvmOutput);
         llvmStream.print("");
         runMenuItem.setEnabled(false);
@@ -660,7 +660,7 @@ public class Main extends javax.swing.JFrame {
         }
         
         if (((FileFrame)desktopPane.getSelectedFrame()).getPreviouslySaved()) {
-            ((FileFrame)desktopPane.getSelectedFrame()).selectConsole();
+            ((FileFrame)desktopPane.getSelectedFrame()).selectConsole("");
             ((FileFrame)desktopPane.getSelectedFrame()).clearConsole();
             ((FileFrame)desktopPane.getSelectedFrame()).clearTAMCode();
             ((FileFrame)desktopPane.getSelectedFrame()).clearTree();
@@ -690,7 +690,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     if (((FileFrame) desktopPane.getSelectedFrame()).getPreviouslySaved()) {
-        ((FileFrame) desktopPane.getSelectedFrame()).selectConsole();
+        ((FileFrame) desktopPane.getSelectedFrame()).selectConsole("llvmCode");
         ((FileFrame) desktopPane.getSelectedFrame()).clearConsole();
         ((FileFrame) desktopPane.getSelectedFrame()).clearLLVMCode();
 

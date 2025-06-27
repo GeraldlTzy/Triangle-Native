@@ -22,22 +22,20 @@ Get.loop3:
   %8 = load i32, ptr %1, align 4
   ret i32 %8
 }
-
-define dso_local i32 @getXMasUno(i32 %getXMasUno.x) { 
-; Comienza BINARY_EXPRESSION 
-  %binaryRes0 = add i32 %getXMasUno.x, 1
-; Termina BINARY_EXPRESSION 
-  ret i32 %binaryRes0 
-}
+%fecha2S = type { i32, i32 }
 
 ; Código LLVM generado por Triangle
 
 define i32 @main() {
 entry:
-  %.x = alloca i32, align 4
-  store i32 10, ptr %.x, align 4
-  %varValue1 = load i32, ptr %.x, align 4
-  %tmp2 = call i32 @getXMasUno( i32 %varValue1)
-  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %tmp2) 
+  %.fecha2 = alloca %fecha2S, align 4
+  %recordAttribute0 = getelementptr inbounds nuw %fecha2S, ptr %.fecha2, i32 0, i32 0
+  %arrayValue1 = load i32, ptr %recordAttribute0, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %arrayValue1) 
+  %recordAttribute2 = getelementptr inbounds nuw %fecha2S, ptr %.fecha2, i32 0, i32 0
+  store i32 3, ptr %recordAttribute2, align 4
+  %recordAttribute3 = getelementptr inbounds nuw %fecha2S, ptr %.fecha2, i32 0, i32 0
+  %arrayValue4 = load i32, ptr %recordAttribute3, align 4
+  call i32 (ptr, ...) @printf(ptr noundef @stringFormat.int, i32 noundef %arrayValue4) 
   ret i32 0
 }

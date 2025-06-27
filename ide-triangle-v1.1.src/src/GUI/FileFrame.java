@@ -199,8 +199,15 @@ public class FileFrame extends javax.swing.JInternalFrame {
     /**
      * Sets the focus on the Console Panel.
      */
-    public void selectConsole() {
-        tabbedPane.setSelectedComponent(consolePanel);
+    public void selectConsole(String llvm) {
+        if (llvm.equals("llvmConsole")){
+            tabbedPane.setSelectedComponent(consoleLLVMPanel);
+        } else if (llvm.equals("llvmCode")){
+            tabbedPane.setSelectedComponent(llvmScroll);
+        } else{
+            tabbedPane.setSelectedComponent(consolePanel);
+        }
+        
     }
     
     /**
