@@ -66,13 +66,13 @@
 - [x] visitSingleActualParameterSequence
     
 ### TYPE DENOTER
-- [ ] visitAnyTypeDenoter
+- [x] visitAnyTypeDenoter
 - [x] visitArrayTypeDenoter
-- [ ] visitBoolTypeDenoter
-- [ ] visitCharTypeDenoter
-- [ ] visitErrorTypeDenoter
-- [ ] visitSimpleTypeDenoter
-- [ ] visitIntTypeDenoter
+- [x] visitBoolTypeDenoter
+- [x] visitCharTypeDenoter
+- [x] visitErrorTypeDenoter
+- [x] visitSimpleTypeDenoter
+- [x] visitIntTypeDenoter
 - [ ] visitRecordTypeDenoter
 - [ ] visitMultipleFieldTypeDenoter
 - [ ] visitSingleFieldTypeDenoter
